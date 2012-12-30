@@ -1,0 +1,16 @@
+#seq_view
+
+Program to display molecular sequence files using ncurses. Meant to be
+an intermediate step between the Unix command line tools and graphical
+sequence editing programs.
+
+Rewritten in C++.
+
+##Installation
+
+==================================================
+
+
+##Use
+
+==================================================
