@@ -285,11 +285,13 @@ namespace SeqView {
                     mvwprintw(window, 1, col, ".");
                 } else {
                     mvwprintw(window, 1, col, "|");
-                    // this sometimes spills over to the next row...
                     mvwprintw(window, 0, col, "%i", i);
                 }
                 col++;
             }
+            // Sometimes the numbers spill over to the next line - this
+            // gets rid of that.
+            mvwprintw(window, 1, 0, string(names_width, ' ').c_str());
             if(isfocal)
                 wattroff(window, A_BOLD);
             wattroff(window, COLOR_PAIR(7));
@@ -417,14 +419,14 @@ namespace SeqView {
                 int newpos;
                 if(direction == SCROLLUP) {
                     if(first_seq > 0) {
-                        newpos = first_seq - (scrollmode * param);
+                        newpos = first_seq - param;
                         if(newpos < 0)
                             newpos = 0;
                         _scroll(first_pos, newpos);
                     }
                 } else if(direction == SCROLLDOWN) {
                     if(first_seq < seqs.numseqs()) {
-                        newpos = first_seq + scrollmode * param;
+                        newpos = first_seq + param;
                         if(newpos >= seqs.numseqs())
                             newpos = seqs.numseqs() - 1;
                         _scroll(first_pos, newpos);
@@ -652,17 +654,12 @@ namespace SeqView {
                 nm += ch;
             }
             rec.setName(nm);
-            cout << nm << endl;
 
             temp = "";
-            while(!input.eof() && inseq) {
+            while(inseq){
                 input.get(ch);
-
-                // Ignore, but note linebreaks
-                if(ch == '\n' || ch == '\r') {
-                    linebreak = true;
-                    continue;
-                }
+                if(input.eof())
+                    break;
 
                 // ">" after a linebreak means a new name
                 if(ch == '>' && linebreak) {
@@ -671,14 +668,21 @@ namespace SeqView {
                     continue;
                 }
 
-                // Ignore whitespace
-                if(ch == ' ' || ch == '\t')
+                // Ignore, but note linebreaks
+                linebreak = false;
+                if(ch == '\n' || ch == '\r') {
+                    linebreak = true;
                     continue;
+                }
+
+                // Ignore whitespace
+                if(ch == ' ' || ch == '\t') {
+                    continue;
+                }
 
                 temp += ch;
             }
             rec.append(temp);
-            cout << rec.length() << endl;
             data.append(rec);
         }
     }
