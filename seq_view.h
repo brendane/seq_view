@@ -281,11 +281,13 @@ namespace SeqView {
             }
             int col = names_width + 1;
             for(int i = first_pos + 1; i < last_pos + 2; i++) {
-                if(i % 10) {
-                    mvwprintw(window, 1, col, ".");
-                } else {
+                if(!(i % 10)) {
                     mvwprintw(window, 1, col, "|");
                     mvwprintw(window, 0, col, "%i", i);
+                } else if(!(i % 5)) {
+                    mvwprintw(window, 1, col, ":");
+                } else {
+                    mvwprintw(window, 1, col, ".");
                 }
                 col++;
             }
@@ -364,7 +366,11 @@ namespace SeqView {
             SeqWindow(int upperleftX, int upperleftY, 
                       int _width, int _height, string filename) {
                 SeqSet sq;
-                parseFasta(filename, sq);
+                try {
+                    parseFasta(filename, sq);
+                } catch(exception &e) {
+                    throw("");
+                }
                 window = newwin(_height, _width, upperleftY, upperleftX);
                 width = _width;
                 height = _height;
@@ -569,15 +575,14 @@ namespace SeqView {
                     SeqWindow * s = new SeqWindow(0, 0, width, height,
                                                   filename);
                     windows.push_back(s);
-                } catch(exception& e) {
-                    print_message("Cannot open file");
+                    update_size();
+                    adjust_to_fill_evenly();
+                    change_focus(windows.size() - 1);
+                    update();
                     return;
-
+                } catch(exception &e) {
                 }
-                update_size();
-                adjust_to_fill_evenly();
-                change_focus(windows.size() - 1);
-                update();
+                print_message("Cannot open file");
             }
 
             void change_focus(int newfocus) {
@@ -627,63 +632,67 @@ namespace SeqView {
     
     void parseFasta(string filename, SeqSet &data) {
 
-        ifstream input(filename.c_str(), ifstream::in);
+        try {
+            ifstream input(filename.c_str(), ifstream::in);
 
-        data.filename = filename;
+            data.filename = filename;
 
-        char ch;
-        string temp = "";
-        string nm;
+            char ch;
+            string temp = "";
+            string nm;
 
-        // Enclose all of this in a while loop that goes to EOF:
-        input.get(ch);
-        if(ch != '>') {
-            throw("Not in FASTA format");
-        }
-
-
-        bool inseq = false;
-        bool linebreak = false;
-        while(!input.eof()) {
-            SeqRecord rec;
-            nm = "";
-            while (true && !inseq) {
-                input.get(ch);
-                if (ch == '\n' || ch == '\r')
-                    inseq = true;
-                nm += ch;
+            // Enclose all of this in a while loop that goes to EOF:
+            input.get(ch);
+            if(ch != '>') {
+                throw("Not in FASTA format");
             }
-            rec.setName(nm);
 
-            temp = "";
-            while(inseq){
-                input.get(ch);
-                if(input.eof())
-                    break;
 
-                // ">" after a linebreak means a new name
-                if(ch == '>' && linebreak) {
-                    inseq = false;
+            bool inseq = false;
+            bool linebreak = false;
+            while(!input.eof()) {
+                SeqRecord rec;
+                nm = "";
+                while (true && !inseq) {
+                    input.get(ch);
+                    if (ch == '\n' || ch == '\r')
+                        inseq = true;
+                    nm += ch;
+                }
+                rec.setName(nm);
+
+                temp = "";
+                while(inseq){
+                    input.get(ch);
+                    if(input.eof())
+                        break;
+
+                    // ">" after a linebreak means a new name
+                    if(ch == '>' && linebreak) {
+                        inseq = false;
+                        linebreak = false;
+                        continue;
+                    }
+
+                    // Ignore, but note linebreaks
                     linebreak = false;
-                    continue;
-                }
+                    if(ch == '\n' || ch == '\r') {
+                        linebreak = true;
+                        continue;
+                    }
 
-                // Ignore, but note linebreaks
-                linebreak = false;
-                if(ch == '\n' || ch == '\r') {
-                    linebreak = true;
-                    continue;
-                }
+                    // Ignore whitespace
+                    if(ch == ' ' || ch == '\t') {
+                        continue;
+                    }
 
-                // Ignore whitespace
-                if(ch == ' ' || ch == '\t') {
-                    continue;
+                    temp += ch;
                 }
-
-                temp += ch;
+                rec.append(temp);
+                data.append(rec);
             }
-            rec.append(temp);
-            data.append(rec);
+        } catch (exception &e) {
+            throw(e);
         }
     }
 
