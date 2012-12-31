@@ -200,14 +200,14 @@ namespace SeqView {
     enum Com {QUIT, SCROLLUP, SCROLLDOWN, SCROLLRIGHT, SCROLLLEFT,
               COMPARETOGGLE, SCROLLMODE, COMPAREMODE, GOTO,
               GOTOEND, GOTOBEGIN, SCROLLTOP, SCROLLBOTTOM,
-              SHOWHELP, CHANGEFOCUS};
+              SHOWHELP, CHANGEFOCUS, NAMEWIDTH};
     typedef std::pair<Com, int> Command;
 
     Com ssc[] = {SCROLLUP, SCROLLDOWN, SCROLLRIGHT, SCROLLLEFT,
                  SCROLLMODE, COMPAREMODE, GOTO, GOTOEND,
                  COMPARETOGGLE, GOTOBEGIN, SCROLLTOP,
-                 SCROLLBOTTOM};
-    set<int> seqSetCommands(ssc, ssc + 12);
+                 SCROLLBOTTOM, NAMEWIDTH};
+    set<int> seqSetCommands(ssc, ssc + 13);
 
     // forward declare
     void parseFasta(string filename, SeqSet &data);
@@ -259,7 +259,7 @@ namespace SeqView {
             wattron(window, COLOR_PAIR(7));
             std::vector<string> names = seqs.nameSlice(first_seq, last_seq);
             for(int i = 0; i < num_seqs_displayed - 1; i++) {
-                mvwprintw(window, i+2, 0, string(names_width, ' ').c_str());
+                mvwprintw(window, i+2, 0, string(names_width + 1, ' ').c_str());
                 if(names_width > names[i].length())
                     mvwprintw(window, i+2, 0, names[i].c_str());
                 else
@@ -277,7 +277,7 @@ namespace SeqView {
             wattron(window, COLOR_PAIR(7));
             for(int i = 0; i < width; i++) {
                     mvwprintw(window, 0, i, " ");
-                    mvwprintw(window, 0, i, " ");
+                    mvwprintw(window, 1, i, " ");
             }
             int col = names_width + 1;
             for(int i = first_pos + 1; i < last_pos + 2; i++) {
@@ -372,8 +372,8 @@ namespace SeqView {
                     throw("");
                 }
                 window = newwin(_height, _width, upperleftY, upperleftX);
-                width = _width;
-                height = _height;
+                width = _width + 1;
+                height = _height + 1;
                 seqs = sq;
                 scrollmode = 1;
                 names_width = 15;
@@ -412,62 +412,65 @@ namespace SeqView {
             }
 
             void change_name_width(int newwidth) {
-                update_size();
-                if(newwidth < width - 5) {
+                if(newwidth < width - 5  && newwidth > 1) {
                     names_width = newwidth;
+                    update_size();
+                    _recalculate_num_displayed();
                 }
             }
 
-            // Scroll the window or move to a particular location
+            // Deal with commands that change SeqSet params
             void handle_command(Command command) {
-                Com direction = command.first;
+                Com com_name = command.first;
                 int param = command.second;
                 int newpos;
-                if(direction == SCROLLUP) {
+                if(com_name == SCROLLUP) {
                     if(first_seq > 0) {
                         newpos = first_seq - param;
                         if(newpos < 0)
                             newpos = 0;
                         _scroll(first_pos, newpos);
                     }
-                } else if(direction == SCROLLDOWN) {
+                } else if(com_name == SCROLLDOWN) {
                     if(first_seq < seqs.numseqs()) {
                         newpos = first_seq + param;
                         if(newpos >= seqs.numseqs())
                             newpos = seqs.numseqs() - 1;
                         _scroll(first_pos, newpos);
                     }
-                } else if(direction == SCROLLLEFT) {
+                } else if(com_name == SCROLLLEFT) {
                     if(first_pos > 0) {
                         newpos = first_pos - scrollmode * param;
                         if(newpos < 0)
                             newpos = 0;
                         _scroll(newpos, first_seq);
                     }
-                } else if(direction == SCROLLRIGHT) {
+                } else if(com_name == SCROLLRIGHT) {
                     if(first_pos < seqs.length()) {
                         newpos = first_pos + scrollmode * param;
                         if(newpos >= seqs.length())
                             newpos = seqs.length() - 1;
                         _scroll(newpos, first_seq);
                     }
-                } else if(direction == SCROLLTOP) {
+                } else if(com_name == SCROLLTOP) {
                     _scroll(first_pos, 0);
-                } else if(direction == SCROLLBOTTOM) {
+                } else if(com_name == SCROLLBOTTOM) {
                     _scroll(first_pos, seqs.numseqs() - 1);
-                } else if(direction == GOTOBEGIN) {
+                } else if(com_name == GOTOBEGIN) {
                     _scroll(0, first_seq);
-                } else if(direction == GOTOEND) {
+                } else if(com_name == GOTOEND) {
                     _scroll(seqs.length() - 1, first_seq);
-                } else if(direction == GOTO) {
+                } else if(com_name == GOTO) {
                     newpos = param - 1 - (width - names_width) / 2;
                     if(newpos < 0)
                         newpos = 0;
                     if(newpos > seqs.length() - 1)
                         newpos = seqs.length() - 1;
                     _scroll(newpos, first_seq);
-                } else if(direction == SCROLLMODE) {
+                } else if(com_name == SCROLLMODE) {
                     set_scroll_mode(param);
+                } else if(com_name == NAMEWIDTH) {
+                    change_name_width(param);
                 }
             }
 
@@ -598,24 +601,25 @@ namespace SeqView {
             // otherwise false; If there any windows left, 
             // keep going.
             bool close_focus() {
-                SeqWindow * s = windows[focal_window];
-                windows.erase(windows.begin() + focal_window);
-                delete s;
-                if(windows.size() > 0) {
+                if(windows.size() == 0) {
+                    return false;
+                } else {
+                    SeqWindow * s = windows[focal_window];
+                    windows.erase(windows.begin() + focal_window);
+                    delete s;
                     if(focal_window >= windows.size())
                         focal_window = 0;
                     change_focus(focal_window);
                     update_size();
                     adjust_to_fill_evenly();
                     update();
-                    return true;
-                } else {
-                    return false;
+                    return (windows.size() > 0);
                 }
             }
 
             bool handle_command(Command command) {
-                if(seqSetCommands.count(command.first) > 0) {
+                if(seqSetCommands.count(command.first) > 0 &&
+                   windows.size() > 0) {
                     windows[focal_window] -> handle_command(command);
                     return true;
                 } else {
@@ -785,6 +789,15 @@ namespace SeqView {
                         return Command(GOTOEND, param);
                     }
                 }
+                if(!command_buffer.compare("n"))
+                    return Command(NAMEWIDTH, param);
+                
+                // if no matches, clear the buffers
+                param_buffer = "";
+                command_buffer = "";
+                on_command = false;
+                on_param = true;
+                param = 1;
             }
 
         }
