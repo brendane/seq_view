@@ -13,11 +13,16 @@
 #include <fstream>
 #include <ncurses.h>
 #include <stdlib.h>
+#include <exception>
+#include <set>
 
 using std::cout;
+using std::getline;
 using std::endl;
 using std::string;
 using std::ifstream;
+using std::exception;
+using std::set;
 
 namespace SeqView {
 
@@ -195,8 +200,14 @@ namespace SeqView {
     enum Com {QUIT, SCROLLUP, SCROLLDOWN, SCROLLRIGHT, SCROLLLEFT,
               COMPARETOGGLE, SCROLLMODE, COMPAREMODE, GOTO,
               GOTOEND, GOTOBEGIN, SCROLLTOP, SCROLLBOTTOM,
-              SHOWHELP};
+              SHOWHELP, CHANGEFOCUS};
     typedef std::pair<Com, int> Command;
+
+    Com ssc[] = {SCROLLUP, SCROLLDOWN, SCROLLRIGHT, SCROLLLEFT,
+                 SCROLLMODE, COMPAREMODE, GOTO, GOTOEND,
+                 COMPARETOGGLE, GOTOBEGIN, SCROLLTOP,
+                 SCROLLBOTTOM};
+    set<int> seqSetCommands(ssc, ssc + 12);
 
     // forward declare
     void parseFasta(string filename, SeqSet &data);
@@ -223,12 +234,10 @@ namespace SeqView {
             int64_t last_seq;
             bool isfocal;
 
-        // Needs a destructor and constructor
-        // Destructor should call delwin, deallocate display
-
         void _scroll(int64_t newleft, int64_t newtop) {
             first_seq = newtop;
             first_pos = newleft;
+            display();
         }
 
         // Given the current window size and the width
@@ -250,6 +259,7 @@ namespace SeqView {
             wattron(window, COLOR_PAIR(7));
             std::vector<string> names = seqs.nameSlice(first_seq, last_seq);
             for(int i = 0; i < num_seqs_displayed - 1; i++) {
+                mvwprintw(window, i+2, 0, string(names_width, ' ').c_str());
                 if(names_width > names[i].length())
                     mvwprintw(window, i+2, 0, names[i].c_str());
                 else
@@ -265,12 +275,17 @@ namespace SeqView {
             if(isfocal)
                 wattron(window, A_BOLD);
             wattron(window, COLOR_PAIR(7));
+            for(int i = 0; i < width; i++) {
+                    mvwprintw(window, 0, i, " ");
+                    mvwprintw(window, 0, i, " ");
+            }
             int col = names_width + 1;
             for(int i = first_pos + 1; i < last_pos + 2; i++) {
                 if(i % 10) {
                     mvwprintw(window, 1, col, ".");
                 } else {
                     mvwprintw(window, 1, col, "|");
+                    // this sometimes spills over to the next row...
                     mvwprintw(window, 0, col, "%i", i);
                 }
                 col++;
@@ -278,7 +293,6 @@ namespace SeqView {
             if(isfocal)
                 wattroff(window, A_BOLD);
             wattroff(window, COLOR_PAIR(7));
-            wnoutrefresh(window);
         }
 
         void _display_seqs() {
@@ -313,23 +327,24 @@ namespace SeqView {
 
         void _display_filename() {
             // display at bottom
-            wattron(window, COLOR_PAIR(7));
+            wattron(window, COLOR_PAIR(7) | A_UNDERLINE);
             if(isfocal)
                 wattron(window, A_REVERSE | A_BOLD);
-            mvwprintw(window, height - 1, 0, seqs.filename.c_str());
+            mvwprintw(window, height - 2, 0, seqs.filename.c_str());
             for(int i = seqs.filename.length() + 1; i <= width; i++)
-                mvwprintw(window, height - 1, i - 1, " ");
+                mvwprintw(window, height - 2, i - 1, " ");
             if(isfocal)
                 wattroff(window, A_REVERSE | A_BOLD);
-            wattroff(window, COLOR_PAIR(7));
+            wattroff(window, COLOR_PAIR(7) | A_UNDERLINE);
         }
 
         public:
 
+            SeqWindow() {
+            }
+
             SeqWindow(int upperleftX, int upperleftY, 
                       int _width, int _height, SeqSet &sq) {
-                refresh(); // this should probably be moved to the
-                           // WindowSet
                 window = newwin(_height, _width, upperleftY, upperleftX);
                 width = _width;
                 height = _height;
@@ -346,8 +361,6 @@ namespace SeqView {
 
             SeqWindow(int upperleftX, int upperleftY, 
                       int _width, int _height, string filename) {
-                refresh(); // this should probably be moved to the
-                           // WindowSet
                 SeqSet sq;
                 parseFasta(filename, sq);
                 window = newwin(_height, _width, upperleftY, upperleftX);
@@ -363,6 +376,16 @@ namespace SeqView {
                 display();
             }
 
+            ~SeqWindow() {
+                wattron(window, COLOR_PAIR(8));
+                for(int i = 0; i < height; i++) {
+                    mvwprintw(window, i, 0, string(width, ' ').c_str());
+                }
+                wattroff(window, COLOR_PAIR(8));
+                wrefresh(window);
+                delwin(window);
+            }
+
             void set_focus(bool focal) {
                 isfocal = focal;
             }
@@ -376,6 +399,8 @@ namespace SeqView {
 
             void update_size() {
                 getmaxyx(window, height, width);
+                height += 1;
+                width += 1;
             }
 
             void change_name_width(int newwidth) {
@@ -386,9 +411,9 @@ namespace SeqView {
             }
 
             // Scroll the window or move to a particular location
-            void scroll_window(Command scroll_command) {
-                Com direction = scroll_command.first;
-                int param = scroll_command.second;
+            void handle_command(Command command) {
+                Com direction = command.first;
+                int param = command.second;
                 int newpos;
                 if(direction == SCROLLUP) {
                     if(first_seq > 0) {
@@ -427,16 +452,32 @@ namespace SeqView {
                 } else if(direction == GOTOEND) {
                     _scroll(seqs.length() - 1, first_seq);
                 } else if(direction == GOTO) {
-                    newpos = param;
+                    newpos = param - 1 - (width - names_width) / 2;
                     if(newpos < 0)
                         newpos = 0;
                     if(newpos > seqs.length() - 1)
                         newpos = seqs.length() - 1;
                     _scroll(newpos, first_seq);
+                } else if(direction == SCROLLMODE) {
+                    set_scroll_mode(param);
                 }
             }
 
-            void resize(int newwidth, int newheight) {
+            void resize(int upperleftX, int upperleftY,
+                        int newwidth, int newheight) {
+                wattron(window, COLOR_PAIR(8));
+                for(int i = 0; i < height; i++) {
+                    mvwprintw(window, i, 0, string(width, ' ').c_str());
+                }
+                wrefresh(window);
+                delwin(window);
+                window = newwin(newheight, newwidth,
+                                upperleftY, upperleftX);
+                height = newheight;
+                width = newwidth;
+                update_size();
+                _recalculate_num_displayed();
+                display();
             }
 
             // Refresh, get the slice of the sequence, add the formatting,
@@ -448,81 +489,197 @@ namespace SeqView {
                 _display_positions();
                 _display_seqs();
                 _display_filename();
-                wnoutrefresh(window);
                 wrefresh(window);
-                // call doupdate() in master loop
             }
     };
 
-    /*
     class WindowSet {
         /*
          * Hold all the windows in the session
          *
+         */
 
         private:
-            std::vector< *SeqWindow > windows;
+            int width, height;
+            std::vector<SeqWindow*> windows;
             int focal_window;
 
+            void adjust_to_fill_evenly() {
+                if(windows.size() == 0)
+                    return;
+                // Space the windows equally in vertical distance
+                // and fill full horizontal space
+                update_size();
+                std::vector<int> newheights;
+                int used_height = 0;
+                int h = (int) ((height - 1) / (double)windows.size());
+                int win = 0;
+                int adj = 0;
+                while(win < windows.size()) {
+                    if(height - used_height < h)
+                        h = height - used_height - 1;
+                    if(win == windows.size() - 1)
+                        if(height - used_height > h + 1)
+                            h = height - used_height - 1;
+                    windows[win] -> resize(0, used_height + adj, width, h);
+                    used_height += h;
+                    win++;
+                }
+                //update();
+            }
+
         public:
-            void add_window() {
+
+            WindowSet() {
+                getmaxyx(stdscr, height, width);
+                focal_window = 0;
+                std::vector<SeqWindow*> windows();
             }
+
+            void run_command(Command command) {
+                // if command in SeqSet commands, pass it along
+                // else run it here
+            }
+
+            void update_size() {
+                getmaxyx(stdscr, height, width);
+            }
+
+            void print_message(string message) {
+                mvwprintw(stdscr, height - 1, 0, string(width, ' ').c_str());
+                mvwprintw(stdscr, height - 1, 0, message.c_str());
+            }
+
+            void update() {
+                int xtemp = width;
+                int ytemp = height;
+                update_size();
+                if(width != xtemp || height != ytemp)
+                    adjust_to_fill_evenly();
+                for(int i = 0; i < windows.size(); i++) {
+                    windows[i] -> display();
+                }
+                refresh();
+            }
+
+            void add_window(string filename) {
+                try {
+                    SeqWindow * s = new SeqWindow(0, 0, width, height,
+                                                  filename);
+                    windows.push_back(s);
+                } catch(exception& e) {
+                    print_message("Cannot open file");
+                    return;
+
+                }
+                update_size();
+                adjust_to_fill_evenly();
+                change_focus(windows.size() - 1);
+                update();
+            }
+
             void change_focus(int newfocus) {
+                if(newfocus > -1 && newfocus < windows.size()) {
+                    windows[focal_window] -> set_focus(false);
+                    focal_window = newfocus;
+                    windows[focal_window] -> set_focus(true);
+                    update();
+                }
             }
-            void resize_focus(int newwidth, int newheight) {
+
+            // Return true if the program should keep going, 
+            // otherwise false; If there any windows left, 
+            // keep going.
+            bool close_focus() {
+                SeqWindow * s = windows[focal_window];
+                windows.erase(windows.begin() + focal_window);
+                delete s;
+                if(windows.size() > 0) {
+                    if(focal_window >= windows.size())
+                        focal_window = 0;
+                    change_focus(focal_window);
+                    update_size();
+                    adjust_to_fill_evenly();
+                    update();
+                    return true;
+                } else {
+                    return false;
+                }
             }
-            void close_focus() {
-                // remove a SeqWindow, and call its destructor
+
+            bool handle_command(Command command) {
+                if(seqSetCommands.count(command.first) > 0) {
+                    windows[focal_window] -> handle_command(command);
+                    return true;
+                } else {
+                    if(command.first == QUIT)
+                        return close_focus();
+                    if(command.first == CHANGEFOCUS) {
+                        change_focus(command.second - 1);
+                        return true;
+                    }
+                }
             }
-    }
-    */
+    };
 
     
     void parseFasta(string filename, SeqSet &data) {
-        try {
 
-            ifstream input(filename.c_str(), ifstream::in);
+        ifstream input(filename.c_str(), ifstream::in);
 
-            data.filename = filename;
+        data.filename = filename;
 
-            char ch;
-            string temp;
-            string nm;
+        char ch;
+        string temp = "";
+        string nm;
 
-            // Enclose all of this in a while loop that goes to EOF:
-            input.get(ch);
-            if(ch != '>') {
-                throw("Not in FASTA format");
+        // Enclose all of this in a while loop that goes to EOF:
+        input.get(ch);
+        if(ch != '>') {
+            throw("Not in FASTA format");
+        }
+
+
+        bool inseq = false;
+        bool linebreak = false;
+        while(!input.eof()) {
+            SeqRecord rec;
+            nm = "";
+            while (true && !inseq) {
+                input.get(ch);
+                if (ch == '\n' || ch == '\r')
+                    inseq = true;
+                nm += ch;
             }
+            rec.setName(nm);
+            cout << nm << endl;
 
+            temp = "";
+            while(!input.eof() && inseq) {
+                input.get(ch);
 
-            while(!input.eof()) {
-                SeqRecord rec;
-                nm = "";
-                while (true) {
-                    input.get(ch);
-                    if (ch == '\n')
-                        break;
-                    nm += ch;
+                // Ignore, but note linebreaks
+                if(ch == '\n' || ch == '\r') {
+                    linebreak = true;
+                    continue;
                 }
 
-                rec.setName(nm);
-
-                while(!input.eof()) {
-                    input.get(ch);
-
-                    if(ch == '>') {
-                        break;
-                    }
-                    getline(input, temp);
-                    rec.append(ch + temp);
+                // ">" after a linebreak means a new name
+                if(ch == '>' && linebreak) {
+                    inseq = false;
+                    linebreak = false;
+                    continue;
                 }
-                data.append(rec);
+
+                // Ignore whitespace
+                if(ch == ' ' || ch == '\t')
+                    continue;
+
+                temp += ch;
             }
-        } catch (ifstream::failure e) {
-            cout << "Failure reading file" << endl;
-            // should probably delete all the SeqRecords here??
-            // or maybe that will be handled in a different piece of code
+            rec.append(temp);
+            cout << rec.length() << endl;
+            data.append(rec);
         }
     }
 
@@ -541,13 +698,14 @@ namespace SeqView {
         init_pair(5,  COLOR_MAGENTA, COLOR_BLACK);
         init_pair(6,  COLOR_CYAN,    COLOR_BLACK);
         init_pair(7,  COLOR_WHITE,   COLOR_BLACK);
+        init_pair(8,  COLOR_BLACK,   COLOR_BLACK);
     }
 
 
     Command getCommand() {
         // Get the command followed by the parameters
 
-        int param = 0;
+        int param = 1;
         string param_buffer = "";
         string command_buffer = "";
 
@@ -605,6 +763,8 @@ namespace SeqView {
                     return Command(SHOWHELP, param);
                 if(!command_buffer.compare("g"))
                     return Command(GOTOBEGIN, param);
+                if(!command_buffer.compare("w"))
+                    return Command(CHANGEFOCUS, param);
                 if(!command_buffer.compare("G")) {
                     if(param_buffer.length()) {
                         return Command(GOTO, param);
@@ -614,10 +774,6 @@ namespace SeqView {
                 }
             }
 
-            //printw(param_buffer.c_str());
-            //printw(":");
-            //printw(command_buffer.c_str());
-            //printw("  ");
         }
     }
 }
