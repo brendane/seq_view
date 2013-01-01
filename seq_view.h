@@ -25,6 +25,14 @@ using std::exception;
 using std::set;
 
 namespace SeqView {
+    
+    void backspace() {
+        int y, x;
+        getyx(stdscr, y, x);
+        wmove(stdscr, y, x - 1);
+        addch(' ');
+        wmove(stdscr, y, x - 1);
+    }
 
     enum SeqType {dna, rna, aa, unknown};
     // instead of this enum, it might be better to have classes of
@@ -200,7 +208,8 @@ namespace SeqView {
     enum Com {QUIT, SCROLLUP, SCROLLDOWN, SCROLLRIGHT, SCROLLLEFT,
               COMPARETOGGLE, SCROLLMODE, COMPAREMODE, GOTO,
               GOTOEND, GOTOBEGIN, SCROLLTOP, SCROLLBOTTOM,
-              SHOWHELP, CHANGEFOCUS, NAMEWIDTH};
+              SHOWHELP, CHANGEFOCUS, NAMEWIDTH, 
+              SPECIAL};
     typedef std::pair<Com, int> Command;
 
     Com ssc[] = {SCROLLUP, SCROLLDOWN, SCROLLRIGHT, SCROLLLEFT,
@@ -511,7 +520,7 @@ namespace SeqView {
          */
 
         private:
-            int width, height;
+            int width, height; // unlike in SeqWindow, these are really xmax and ymax
             std::vector<SeqWindow*> windows;
             int focal_window;
 
@@ -629,7 +638,72 @@ namespace SeqView {
                         change_focus(command.second - 1);
                         return true;
                     }
+                    if(command.first == SPECIAL) {
+                        handle_special_command();
+                        return true;
+                    }
                 }
+            }
+
+            void handle_special_command() {
+                for(int i = 0; i <= width; i++)
+                    mvwaddch(stdscr, height - 1, i, ' ');
+                mvwprintw(stdscr, height - 1, 0, ":");
+                string buffer = "";
+                char ch;
+                while(true) {
+                    ch = getch();
+
+                    // Eventually keep a stack of previous commands
+                    // and cycle through them with UP and DOWN.
+
+                    // Backspace
+                    if(ch == KEY_BACKSPACE || ch == KEY_DL || ch == 7) {
+                        backspace();
+                        if(buffer.size())
+                            buffer.erase(buffer.size() - 1);
+                        continue;
+                    }
+
+                    if(ch == KEY_ENTER || ch == '\n' || ch == '\r')
+                        break;
+                    if(ch < 27 || ch > 126)
+                        continue;
+                    if(ch == 27) {
+                        for(int i = 0; i <= width; i++)
+                            mvwaddch(stdscr, height - 1, i, ' ');
+                        return; // ESC key
+                    }
+                    waddch(stdscr, ch);
+                    buffer += ch;
+                }
+                // break buffer into tokens separated by spaces
+                // and process
+                std::vector<string> tokens;
+                string tok = "";
+                for(int i = 0; i < buffer.size(); i++) {
+                    if(buffer[i] == ' ') {
+                        tokens.push_back(string(tok));
+                        printw(tok.c_str());
+                        printw(" ");
+                        tok = "";
+                    } else {
+                        tok += buffer[i];
+                    }
+                }
+                if(tok.size())
+                    tokens.push_back(string(tok));
+
+                // open file
+                // Eventually this should allow file completion
+                // on tab.
+                if(!tokens[0].compare("open") && tokens.size() == 2) {
+                    add_window(tokens[1]);
+                }
+
+                // Clear space
+                for(int i = 0; i <= width; i++)
+                    mvwaddch(stdscr, height - 1, i, ' ');
             }
     };
 
@@ -702,9 +776,10 @@ namespace SeqView {
 
     void initDisplay() {
         initscr();
-        keypad(stdscr, true);
+        clear();
         cbreak();
         noecho();
+        keypad(stdscr, true);
         curs_set(0);
 
         start_color();
@@ -791,6 +866,8 @@ namespace SeqView {
                 }
                 if(!command_buffer.compare("n"))
                     return Command(NAMEWIDTH, param);
+                if(!command_buffer.compare(":"))
+                    return Command(SPECIAL, param);
                 
                 // if no matches, clear the buffers
                 param_buffer = "";
