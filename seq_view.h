@@ -38,14 +38,7 @@ namespace SeqView {
     // instead of this enum, it might be better to have classes of
     // SeqRecord that correspond to types
 
-    //SeqType guessType(std::string seq) {
-        //SeqType typ = unknown;
-        //for(i = 0; i < seq.length(); i++) {
-            // make a set of DNA letters, RNA letters, and AA letters
-            // and test for membership in each set
-            // If any letters are outside these sets, the type is unknown
-        //}
-    //}
+    enum DisplayMode {NORMAL, CODON};
 
     class SeqRecord {
         /*
@@ -90,18 +83,46 @@ namespace SeqView {
                 return seq;
             }
 
-            std::string getSeq(int64_t beg, int64_t end) {
+            std::string getSeq(int64_t beg, int64_t end, 
+                               DisplayMode mode, int frame=1) {
                 int64_t len = end - beg + 1;
                 std::string ret;
                 if(end > length()) {
                     if(beg > length()) {
                         ret = std::string(len, ' ');
                     } else {
-                        ret = seq.substr(beg, (length() - beg)) +
-                              std::string(end - length() + 1, ' ');
+                        if(mode == NORMAL) {
+                            ret = seq.substr(beg, (length() - beg)) +
+                                std::string(end - length() + 1, ' ');
+                        } else if(mode == CODON) {
+                            int pos = beg;
+                            for(int i = 0; i < length() - beg; i++) {
+                                if((pos - frame - 1) % 3 == 0) {
+                                    ret += seq.substr(pos, 1);
+                                    ret += " ";
+                                } else {
+                                    ret += seq.substr(pos, 1);
+                                }
+                                pos++;
+                            }
+                        }
                     }
                 } else {
-                    ret = seq.substr(beg, len);
+                    if(mode == NORMAL) {
+                        ret = seq.substr(beg, len);
+                    } else if(mode == CODON) {
+                        int pos = beg;
+                        for(int i = 0; i < len; i++) {
+                            if((pos - frame - 1) % 3 == 0) {
+                                ret += seq.substr(pos, 1);
+                                ret += " ";
+                            } else {
+                                ret += seq.substr(pos, 1);
+                            }
+                            pos++;
+                        }
+                    }
+
                 }
                 return ret;
             }
@@ -136,16 +157,29 @@ namespace SeqView {
             std::vector<SeqRecord> seqs;
             int64_t maxlen;
             int64_t nseqs;
+            int frame;
             
         public:
 
             SeqSet() {
                 maxlen = 0;
                 nseqs = 0;
+                frame = 1;
                 std::vector<SeqRecord> seqs;
             }
 
             string filename;
+
+            void set_frame(int f) {
+                if(f < 1 || f > 3) {
+                } else {
+                    frame = f;
+                }
+            }
+
+            int get_frame() {
+                return frame;
+            }
 
             int64_t numseqs() {
                 return nseqs;
@@ -170,7 +204,8 @@ namespace SeqView {
             }
 
             std::vector<std::string> slice(int64_t beg, int64_t end,
-                                           int64_t first, int64_t last) {
+                                           int64_t first, int64_t last,
+                                           DisplayMode mode) {
                 std::vector<std::string> ret;
                 ret.reserve(last - first + 1);
 
@@ -178,7 +213,7 @@ namespace SeqView {
                     if(i > (nseqs - 1)) {
                         ret.push_back(std::string(end - beg + 1, ' '));
                     } else {
-                        ret.push_back(seqs[i].getSeq(beg, end));
+                        ret.push_back(seqs[i].getSeq(beg, end, mode, frame));
                     }
                 }
                 return ret;
@@ -187,7 +222,7 @@ namespace SeqView {
             char * column(int64_t pos) {
                 char ret[nseqs];
                 for(int64_t i = 0; i < nseqs; i++) {
-                    ret[i] = (seqs[i].getSeq(i, i)).c_str()[0];
+                    ret[i] = (seqs[i].getSeq(i, i, NORMAL)).c_str()[0];
                 }
             }
 
@@ -209,14 +244,14 @@ namespace SeqView {
               COMPARETOGGLE, SCROLLMODE, COMPAREMODE, GOTO,
               GOTOEND, GOTOBEGIN, SCROLLTOP, SCROLLBOTTOM,
               SHOWHELP, CHANGEFOCUS, NAMEWIDTH, 
-              SPECIAL};
+              SPECIAL, DISPLAYMODE, SETFRAME};
     typedef std::pair<Com, int> Command;
 
     Com ssc[] = {SCROLLUP, SCROLLDOWN, SCROLLRIGHT, SCROLLLEFT,
                  SCROLLMODE, COMPAREMODE, GOTO, GOTOEND,
                  COMPARETOGGLE, GOTOBEGIN, SCROLLTOP,
-                 SCROLLBOTTOM, NAMEWIDTH};
-    set<int> seqSetCommands(ssc, ssc + 13);
+                 SCROLLBOTTOM, NAMEWIDTH, DISPLAYMODE, SETFRAME};
+    set<int> seqSetCommands(ssc, ssc + 15);
 
     // forward declare
     void parseFasta(string filename, SeqSet &data);
@@ -232,6 +267,7 @@ namespace SeqView {
             WINDOW * window; // the ncurses window this maps to
             SeqSet seqs;
             int scrollmode;
+            DisplayMode display_mode;
             int width;
             int height;
             int names_width; // width allocated for names
@@ -289,6 +325,7 @@ namespace SeqView {
                     mvwprintw(window, 1, i, " ");
             }
             int col = names_width + 1;
+            int frame = seqs.get_frame();
             for(int i = first_pos + 1; i < last_pos + 2; i++) {
                 if(!(i % 10)) {
                     mvwprintw(window, 1, col, "|");
@@ -298,7 +335,15 @@ namespace SeqView {
                 } else {
                     mvwprintw(window, 1, col, ".");
                 }
+                if(display_mode == CODON) {
+                    if((i - frame + 1) % 3 == 0) {
+                        col++;
+                        mvwprintw(window, 1, col, " ");
+                    }
+                }
                 col++;
+                if(col >= width)
+                    break;
             }
             // Sometimes the numbers spill over to the next line - this
             // gets rid of that.
@@ -314,7 +359,8 @@ namespace SeqView {
             // Also may require some adjustment to color amino acid
             // sequences properly.
             std::vector<string> sequences = seqs.slice(first_pos, last_pos,
-                                                       first_seq, last_seq);
+                                                       first_seq, last_seq,
+                                                       display_mode);
             int row = 2;
             char ch;
             int col;
@@ -363,6 +409,7 @@ namespace SeqView {
                 height = _height;
                 seqs = sq;
                 scrollmode = 1;
+                display_mode = NORMAL;
                 names_width = 15;
                 first_pos = 0;
                 first_seq = 0;
@@ -381,6 +428,7 @@ namespace SeqView {
                 height = _height + 1;
                 seqs = sq;
                 scrollmode = 1;
+                display_mode = NORMAL;
                 names_width = 15;
                 first_pos = 0;
                 first_seq = 0;
@@ -467,6 +515,8 @@ namespace SeqView {
                     _scroll(seqs.length() - 1, first_seq);
                 } else if(com_name == GOTO) {
                     newpos = param - 1 - (width - names_width) / 2;
+                    if(display_mode == CODON)
+                        newpos += (width - names_width) / 6;
                     if(newpos < 0)
                         newpos = 0;
                     if(newpos > seqs.length() - 1)
@@ -476,6 +526,13 @@ namespace SeqView {
                     set_scroll_mode(param);
                 } else if(com_name == NAMEWIDTH) {
                     change_name_width(param);
+                } else if(com_name == DISPLAYMODE) {
+                    if(param == 1)
+                        display_mode = NORMAL;
+                    else if(param == 2)
+                        display_mode = CODON;
+                } else if(com_name == SETFRAME) {
+                    seqs.set_frame(param);
                 }
             }
 
@@ -700,6 +757,13 @@ namespace SeqView {
                     for(int i = 0; i <= width; i++)
                         mvwaddch(stdscr, height - 1, i, ' ');
                     add_window(tokens[1]);
+                } else if(!tokens[0].compare("mode") && tokens.size() == 2) {
+                    if(!tokens[1].compare("codon"))
+                        handle_command(Command(DISPLAYMODE, 2));
+                    if(!tokens[1].compare("normal"))
+                        handle_command(Command(DISPLAYMODE, 1));
+                    for(int i = 0; i <= width; i++)
+                        mvwaddch(stdscr, height - 1, i, ' ');
                 }
             }
     };
@@ -861,6 +925,10 @@ namespace SeqView {
                         return Command(GOTOEND, param);
                     }
                 }
+                if(!command_buffer.compare("d"))
+                        return Command(DISPLAYMODE, param);
+                if(!command_buffer.compare("f"))
+                        return Command(SETFRAME, param);
                 if(!command_buffer.compare("n"))
                     return Command(NAMEWIDTH, param);
                 if(!command_buffer.compare(":"))
