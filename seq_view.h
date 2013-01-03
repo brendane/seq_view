@@ -375,11 +375,7 @@ namespace SeqView {
             SeqWindow(int upperleftX, int upperleftY, 
                       int _width, int _height, string filename) {
                 SeqSet sq;
-                try {
-                    parseFasta(filename, sq);
-                } catch(exception &e) {
-                    throw("");
-                }
+                parseFasta(filename, sq);
                 window = newwin(_height, _width, upperleftY, upperleftX);
                 width = _width + 1;
                 height = _height + 1;
@@ -566,8 +562,10 @@ namespace SeqView {
             }
 
             void print_message(string message) {
+                wattron(stdscr, A_NORMAL | A_BOLD);
                 mvwprintw(stdscr, height - 1, 0, string(width, ' ').c_str());
                 mvwprintw(stdscr, height - 1, 0, message.c_str());
+                wattroff(stdscr, A_BOLD);
             }
 
             void update() {
@@ -592,9 +590,9 @@ namespace SeqView {
                     change_focus(windows.size() - 1);
                     update();
                     return;
-                } catch(exception &e) {
+                } catch(...) {
+                    print_message("Cannot open file " + filename);
                 }
-                print_message("Cannot open file");
             }
 
             void change_focus(int newfocus) {
@@ -698,19 +696,18 @@ namespace SeqView {
                 // Eventually this should allow file completion
                 // on tab.
                 if(!tokens[0].compare("open") && tokens.size() == 2) {
+                    // Clear space
+                    for(int i = 0; i <= width; i++)
+                        mvwaddch(stdscr, height - 1, i, ' ');
                     add_window(tokens[1]);
                 }
-
-                // Clear space
-                for(int i = 0; i <= width; i++)
-                    mvwaddch(stdscr, height - 1, i, ' ');
             }
     };
 
     
     void parseFasta(string filename, SeqSet &data) {
 
-        try {
+        //try {
             ifstream input(filename.c_str(), ifstream::in);
 
             data.filename = filename;
@@ -769,9 +766,9 @@ namespace SeqView {
                 rec.append(temp);
                 data.append(rec);
             }
-        } catch (exception &e) {
-            throw(e);
-        }
+        //} catch (...) {
+        //    throw("Problem parsing file");
+        //}
     }
 
     void initDisplay() {
