@@ -278,10 +278,12 @@ namespace SeqView {
             int64_t last_pos;
             int64_t last_seq;
             bool isfocal;
+            bool modified;
 
         void _scroll(int64_t newleft, int64_t newtop) {
             first_seq = newtop;
             first_pos = newleft;
+            modified = true;
             display();
         }
 
@@ -296,6 +298,7 @@ namespace SeqView {
             num_seqs_displayed = height - 3;
             last_pos = first_pos + num_pos_displayed - 1;
             last_seq = first_seq + num_seqs_displayed - 1;
+            modified = true;
         }
 
         void _display_names() {
@@ -400,6 +403,7 @@ namespace SeqView {
         public:
 
             SeqWindow() {
+                modified = true;
             }
 
             SeqWindow(int upperleftX, int upperleftY, 
@@ -416,6 +420,7 @@ namespace SeqView {
                 update_size();
                 _recalculate_num_displayed();
                 isfocal = true;
+                modified = true;
                 display();
             }
 
@@ -434,6 +439,7 @@ namespace SeqView {
                 first_seq = 0;
                 update_size();
                 _recalculate_num_displayed();
+                modified = true;
                 display();
             }
 
@@ -449,6 +455,7 @@ namespace SeqView {
 
             void set_focus(bool focal) {
                 isfocal = focal;
+                modified = true;
             }
 
             // scroll mode is in powers of 10
@@ -531,8 +538,10 @@ namespace SeqView {
                         display_mode = NORMAL;
                     else if(param == 2)
                         display_mode = CODON;
+                    modified = true;
                 } else if(com_name == SETFRAME) {
                     seqs.set_frame(param);
+                    modified = true;
                 }
             }
 
@@ -550,19 +559,27 @@ namespace SeqView {
                 width = newwidth;
                 update_size();
                 _recalculate_num_displayed();
+                modified = true;
                 display();
             }
 
             // Refresh, get the slice of the sequence, add the formatting,
             // and use wprintw to put everything on the screen.
             void display() {
+                int w = width;
+                int h = height;
                 update_size();
-                _recalculate_num_displayed();
-                _display_names();
-                _display_positions();
-                _display_seqs();
-                _display_filename();
-                wrefresh(window);
+                if(w != width || h != height)
+                    modified = true;
+                if(modified) {
+                    _recalculate_num_displayed();
+                    _display_names();
+                    _display_positions();
+                    _display_seqs();
+                    _display_filename();
+                    wrefresh(window);
+                } else {
+                }
             }
     };
 
@@ -703,7 +720,7 @@ namespace SeqView {
             void handle_special_command() {
                 for(int i = 0; i <= width; i++)
                     mvwaddch(stdscr, height - 1, i, ' ');
-                mvwprintw(stdscr, height - 1, 0, ":");
+                mvwprintw(stdscr, height - 1, 0, ";");
                 string buffer = "";
                 char ch;
                 while(true) {
@@ -762,6 +779,9 @@ namespace SeqView {
                         handle_command(Command(DISPLAYMODE, 2));
                     if(!tokens[1].compare("normal"))
                         handle_command(Command(DISPLAYMODE, 1));
+                    for(int i = 0; i <= width; i++)
+                        mvwaddch(stdscr, height - 1, i, ' ');
+                } else {
                     for(int i = 0; i <= width; i++)
                         mvwaddch(stdscr, height - 1, i, ' ');
                 }
@@ -931,7 +951,7 @@ namespace SeqView {
                         return Command(SETFRAME, param);
                 if(!command_buffer.compare("n"))
                     return Command(NAMEWIDTH, param);
-                if(!command_buffer.compare(":"))
+                if(!command_buffer.compare(";"))
                     return Command(SPECIAL, param);
                 
                 // if no matches, clear the buffers
