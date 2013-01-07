@@ -159,6 +159,23 @@ namespace SeqView {
             int64_t maxlen;
             int64_t nseqs;
             int frame;
+
+            std::vector<std::string> _slice(int64_t beg, int64_t end, 
+                                            int64_t first, int64_t last,
+                                            DisplayMode mode) {
+                std::vector<std::string> ret;
+                ret.reserve(last - first + 1);
+
+                for(int64_t i = first; i < last; i++) {
+                    if(i > (nseqs - 1)) {
+                        ret.push_back(std::string(end - beg + 1, ' '));
+                    } else {
+                        ret.push_back(seqs[i].getSeq(beg, end, mode, frame));
+                    }
+                }
+                std::vector<bool> comps;
+                return ret;
+            }
             
         public:
 
@@ -204,21 +221,65 @@ namespace SeqView {
                 return ret;
             }
 
-            std::vector<std::string> slice(int64_t beg, int64_t end,
-                                           int64_t first, int64_t last,
-                                           DisplayMode mode) {
-                std::vector<std::string> ret;
+            std::pair< std::vector<std::string>, std::vector<bool> >
+                slice(int64_t beg, int64_t end, int64_t first, int64_t last,
+                      DisplayMode mode, bool compare) {
+                std::vector<std::string> ret = _slice(beg, end, first, last, mode);
                 ret.reserve(last - first + 1);
+                std::vector<bool> comps;
+                if(compare)
+                    comps = do_compare(_slice(beg, end, 0, numseqs(), mode));
+                return std::make_pair(ret, comps);
+            }
 
-                for(int64_t i = first; i < last; i++) {
-                    if(i > (nseqs - 1)) {
-                        ret.push_back(std::string(end - beg + 1, ' '));
-                    } else {
-                        ret.push_back(seqs[i].getSeq(beg, end, mode, frame));
+
+            std::vector<bool> do_compare(std::vector<string> s) {
+                // For now, just a simple comparison that considers ambiguities
+                // in nucleotide sequence; anything that is not an IUPAC DNA
+                // letter is considered completely ambiguous
+
+                std::vector <bool> ret;
+                ret.reserve(s[0].size());
+                for(int pos = 0; pos < s[0].size(); pos++) {
+                    // A, T, C, G
+                    bool matches[4] = {true, true, true, true};
+                    bool match = true;
+                    bool all_spaces = true;
+                    for(int i = 0; i < s.size(); i++) {
+                        char ch = s[i][pos];
+                        if(ch != ' ')
+                            all_spaces = false;
+                        if(ch == 'A' || ch == 'a') {
+                            matches[1] = false;
+                            matches[2] = false;
+                            matches[3] = false;
+                        } else if(ch == 'T' || ch == 't') {
+                            matches[0] = false;
+                            matches[2] = false;
+                            matches[3] = false;
+                        } else if(ch == 'C' || ch == 'c') {
+                            matches[0] = false;
+                            matches[1] = false;
+                            matches[3] = false;
+                        } else if(ch == 'G' || ch == 'g') {
+                            matches[0] = false;
+                            matches[1] = false;
+                            matches[2] = false;
+                        }
+                        // IUPAC ambiguity codes go here
+                        if(!matches[0] && !matches[1] && !matches[2] && !matches[3]) {
+                            match = false;
+                            break;
+                        }
                     }
+                    if(match && !all_spaces)
+                        ret.push_back(true);
+                    else
+                        ret.push_back(false);
                 }
                 return ret;
             }
+
 
             char * column(int64_t pos) {
                 char ret[nseqs];
@@ -237,22 +298,23 @@ namespace SeqView {
     };
 
     //std::vector<bool> compare(std::vector<std::string>) {
-        // will need a mode argument as well
+    // will need a mode argument as well
     //}
 
-    
+
     enum Com {QUIT, SCROLLUP, SCROLLDOWN, SCROLLRIGHT, SCROLLLEFT,
-              COMPARETOGGLE, SCROLLMODE, COMPAREMODE, GOTO,
-              GOTOEND, GOTOBEGIN, SCROLLTOP, SCROLLBOTTOM,
-              SHOWHELP, CHANGEFOCUS, NAMEWIDTH, 
-              SPECIAL, DISPLAYMODE, SETFRAME};
+        COMPARETOGGLE, SCROLLMODE, COMPAREMODE, GOTO,
+        GOTOEND, GOTOBEGIN, SCROLLTOP, SCROLLBOTTOM,
+        SHOWHELP, CHANGEFOCUS, NAMEWIDTH, 
+        SPECIAL, DISPLAYMODE, SETFRAME, COMPARE};
     typedef std::pair<Com, int> Command;
 
     Com ssc[] = {SCROLLUP, SCROLLDOWN, SCROLLRIGHT, SCROLLLEFT,
-                 SCROLLMODE, COMPAREMODE, GOTO, GOTOEND,
-                 COMPARETOGGLE, GOTOBEGIN, SCROLLTOP,
-                 SCROLLBOTTOM, NAMEWIDTH, DISPLAYMODE, SETFRAME};
-    set<int> seqSetCommands(ssc, ssc + 15);
+        SCROLLMODE, COMPAREMODE, GOTO, GOTOEND,
+        COMPARETOGGLE, GOTOBEGIN, SCROLLTOP,
+        SCROLLBOTTOM, NAMEWIDTH, DISPLAYMODE, SETFRAME,
+        COMPARE};
+    set<int> seqSetCommands(ssc, ssc + 16);
 
     // forward declare
     void parseFasta(string filename, SeqSet &data);
@@ -280,6 +342,7 @@ namespace SeqView {
             int64_t last_seq;
             bool isfocal;
             bool modified;
+            bool compare;
 
         void _scroll(int64_t newleft, int64_t newtop) {
             first_seq = newtop;
@@ -362,14 +425,18 @@ namespace SeqView {
             // arguments for formatting eventually.
             // Also may require some adjustment to color amino acid
             // sequences properly.
-            std::vector<string> sequences = seqs.slice(first_pos, last_pos,
-                                                       first_seq, last_seq,
-                                                       display_mode);
+            std::pair< std::vector<string>, std::vector<bool> > 
+                s= seqs.slice(first_pos, last_pos, first_seq, last_seq,
+                              display_mode, compare);
+            std::vector<string> sequences = s.first;
+            std::vector<bool> comps = s.second;
             int row = 2;
             char ch;
             int col;
             for(int i = 0; i < num_seqs_displayed - 1; i++) {
                 for(int j = 0; j < sequences[i].length(); j++) {
+                    if(compare && comps[j] && (i + first_seq) < seqs.numseqs())
+                        wattron(window, A_REVERSE);
                     ch = sequences[i][j];
                     if(ch == 'A' || ch == 'a')
                         wattron(window, COLOR_PAIR(1));
@@ -383,6 +450,8 @@ namespace SeqView {
                         col = 7;
                     mvwaddch(window, row, names_width + 1 + j, ch);
                     wattroff(window, COLOR_PAIR(col));
+                    if(compare && comps[j])
+                        wattroff(window, A_REVERSE);
                 }
                 row++;
             }
@@ -401,10 +470,12 @@ namespace SeqView {
             wattroff(window, COLOR_PAIR(7) | A_UNDERLINE);
         }
 
+
         public:
 
             SeqWindow() {
                 modified = true;
+                compare = false;
             }
 
             SeqWindow(int upperleftX, int upperleftY, 
@@ -422,6 +493,7 @@ namespace SeqView {
                 _recalculate_num_displayed();
                 isfocal = true;
                 modified = true;
+                compare = false;
                 display();
             }
 
@@ -441,6 +513,7 @@ namespace SeqView {
                 update_size();
                 _recalculate_num_displayed();
                 modified = true;
+                compare = false;
                 display();
             }
 
@@ -542,6 +615,9 @@ namespace SeqView {
                     modified = true;
                 } else if(com_name == SETFRAME) {
                     seqs.set_frame(param);
+                    modified = true;
+                } else if(com_name = COMPARE) {
+                    compare = !compare;
                     modified = true;
                 }
             }
@@ -954,6 +1030,8 @@ namespace SeqView {
                     return Command(NAMEWIDTH, param);
                 if(!command_buffer.compare(";"))
                     return Command(SPECIAL, param);
+                if(!command_buffer.compare("c"))
+                    return Command(COMPARE, param);
                 
                 // if no matches, clear the buffers
                 param_buffer = "";
