@@ -105,6 +105,7 @@ namespace SeqView {
                                 }
                                 pos++;
                             }
+                            ret += string(end - length() - 1, ' ');
                         }
                     }
                 } else {
