@@ -784,6 +784,11 @@ namespace SeqView {
                     if(command.first == QUIT)
                         return close_focus();
                     if(command.first == CHANGEFOCUS) {
+                        if(command.second == 0) {
+                            command.second = focal_window + 2; // Add 2 b/c command is 1 based, but focal_window is 0 based
+                            if(command.second > windows.size())
+                               command.second = 1;
+                        }
                         change_focus(command.second - 1);
                         return true;
                     }
@@ -1021,8 +1026,12 @@ namespace SeqView {
                     return Command(SHOWHELP, param);
                 if(!command_buffer.compare("g"))
                     return Command(GOTOBEGIN, param);
-                if(!command_buffer.compare("w"))
+                if(!command_buffer.compare("w")) {
+                    if(param_buffer.length() == 0) {
+                        param = 0;
+                    }
                     return Command(CHANGEFOCUS, param);
+                }
                 if(!command_buffer.compare("G")) {
                     if(param_buffer.length()) {
                         return Command(GOTO, param);
@@ -1031,9 +1040,9 @@ namespace SeqView {
                     }
                 }
                 if(!command_buffer.compare("d"))
-                        return Command(DISPLAYMODE, param);
+                    return Command(DISPLAYMODE, param);
                 if(!command_buffer.compare("f"))
-                        return Command(SETFRAME, param);
+                    return Command(SETFRAME, param);
                 if(!command_buffer.compare("n"))
                     return Command(NAMEWIDTH, param);
                 if(!command_buffer.compare(";"))
