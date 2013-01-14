@@ -826,38 +826,46 @@ namespace SeqView {
                     waddch(stdscr, ch);
                     buffer += ch;
                 }
+
                 // break buffer into tokens separated by spaces
                 // and process
-                std::vector<string> tokens;
-                string tok = "";
-                for(int i = 0; i < buffer.size(); i++) {
-                    if(buffer[i] == ' ') {
-                        tokens.push_back(string(tok));
-                        printw(tok.c_str());
-                        printw(" ");
-                        tok = "";
-                    } else {
-                        tok += buffer[i];
-                    }
-                }
-                if(tok.size())
-                    tokens.push_back(string(tok));
+                if(buffer.size() > 0) {
+                    std::vector<string> tokens;
+                    string tok = "";
+                    for(int i = 0; i < buffer.size(); i++) {
+                        if(buffer[i] == ' ') {
+                            tokens.push_back(string(tok));
 
-                // open file
-                // Eventually this should allow file completion
-                // on tab.
-                if(!tokens[0].compare("open") && tokens.size() == 2) {
-                    // Clear space
-                    for(int i = 0; i <= width; i++)
-                        mvwaddch(stdscr, height - 1, i, ' ');
-                    add_window(tokens[1]);
-                } else if(!tokens[0].compare("mode") && tokens.size() == 2) {
-                    if(!tokens[1].compare("codon"))
-                        handle_command(Command(DISPLAYMODE, 2));
-                    if(!tokens[1].compare("normal"))
-                        handle_command(Command(DISPLAYMODE, 1));
-                    for(int i = 0; i <= width; i++)
-                        mvwaddch(stdscr, height - 1, i, ' ');
+                            // Get rid of these printing commands
+                            printw(tok.c_str());
+                            printw(" ");
+                            tok = "";
+                        } else {
+                            tok += buffer[i];
+                        }
+                    }
+                    if(tok.size())
+                        tokens.push_back(string(tok));
+
+                    // open file
+                    // Eventually this should allow file completion
+                    // on tab.
+                    if(!tokens[0].compare("open") && tokens.size() == 2) {
+                        // Clear space
+                        for(int i = 0; i <= width; i++)
+                            mvwaddch(stdscr, height - 1, i, ' ');
+                        add_window(tokens[1]);
+                    } else if(!tokens[0].compare("mode") && tokens.size() == 2) {
+                        if(!tokens[1].compare("codon"))
+                            handle_command(Command(DISPLAYMODE, 2));
+                        if(!tokens[1].compare("normal"))
+                            handle_command(Command(DISPLAYMODE, 1));
+                        for(int i = 0; i <= width; i++)
+                            mvwaddch(stdscr, height - 1, i, ' ');
+                    } else {
+                        for(int i = 0; i <= width; i++)
+                            mvwaddch(stdscr, height - 1, i, ' ');
+                    }
                 } else {
                     for(int i = 0; i <= width; i++)
                         mvwaddch(stdscr, height - 1, i, ' ');
