@@ -156,7 +156,8 @@ namespace SeqView {
 
             // Backspace
             if(ch == KEY_BACKSPACE || ch == KEY_DL || ch == 7) {
-                backspace();
+                if(buffer.size())
+                    backspace();
                 if(buffer.size())
                     buffer.erase(buffer.size() - 1);
                 continue;
