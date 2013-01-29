@@ -12,6 +12,18 @@
  * see <http://creativecommons.org/publicdomain/zero/1.0/>. 
  *
  */
+
+/*
+ * Header file - contains declarations for all functions and
+ * classes.
+ *
+ * Also global variables:
+ *
+ * ssc : Commands that are handled by the SeqSet class
+ * seqSetCommands : A set of the above
+ *
+ */
+
 #ifndef SEQVIEW_H
 #define SEQVIEW_H
 
