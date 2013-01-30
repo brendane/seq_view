@@ -17,12 +17,12 @@ To compile:
 
 cd seq_view
 
-g++ -o seq_view seq_view.cpp -I"." -lncurses
+g++ -o seq_view *.cpp -I"." -lncurses
 
 Note that some systems may have ncurses installed as "curses." In that
 case compile with:
 
-g++ -o seq_view seq_view.cpp -I"." -lcurses
+g++ -o seq_view *.cpp -I"." -lcurses
 
 
 ##Use
@@ -38,9 +38,9 @@ Once the file is open, a set of keyboard command, similar to vim's
 commands can be used to move through the data and control the
 appearance. To cancel any command type ESC.
 
-KEY                 ACTION
+####KEY                 ACTION
 
-General
+#####General
 
 q                   Close current window. When last window is closed,
                     the program quits.
@@ -50,7 +50,7 @@ w                   Cycle through windows
 [number]w           Move to window [number] (1 based)
 
 
-Scrolling
+######Scrolling
 
 All scrolling commands can be proceeded by a number that is multiplied
 by the current base scroll amount to get the number of positions to
@@ -77,7 +77,7 @@ g                   Move to the beginning
 [number]G           Move to position [number]
 
 
-Appearance
+#####Appearance
 
 c                   Turn on and off comparison highlighting. When
                     comparison highlighting is on, sites that are all
@@ -90,20 +90,28 @@ c                   Turn on and off comparison highlighting. When
 [number]n           Adjust the number of characters of the names
                     displayed to be [number].
 
+[number]f           Adjust the frame for codon display mode. Should be
+                    1, 2, or 3.
 
-Special commands
+
+#####Special commands
 
 These commands are entered by typing ";". There are just a few of them
 right now:
 
 "open":             Type ";open FILENAME" to open FILENAME.
 
-"display":          Type ";display MODE" to switch display mode
+"mode":             Type ";mode MODE" to switch display mode
                     ("normal" or "codon" right now).
-
 
 
 ### Comparison modes
 
+TODO...
+
 
 ### Display modes
+
+* normal    Displays sequences with one column per base
+* codon     Puts a space between every codon (set the frame
+            with 'f' key command).
