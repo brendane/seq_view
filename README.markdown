@@ -47,10 +47,10 @@ q                   Close current window. When last window is closed,
 
 w                   Cycle through windows
 
-[number]w           Move to window [number] (1 based)
+[number]w           Move to window *number* (1 based)
 
 
-######Scrolling
+#####Scrolling
 
 All scrolling commands can be proceeded by a number that is multiplied
 by the current base scroll amount to get the number of positions to
@@ -112,6 +112,6 @@ TODO...
 
 ### Display modes
 
-* normal    Displays sequences with one column per base
-* codon     Puts a space between every codon (set the frame
+* *normal*    Displays sequences with one column per base
+* *codon*     Puts a space between every codon (set the frame
             with 'f' key command).
