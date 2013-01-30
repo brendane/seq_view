@@ -147,6 +147,8 @@ namespace SeqView {
             void append(SeqRecord rec);
     };
 
+    void parseFasta(string filename, SeqSet &data);
+
     //std::vector<bool> compare(std::vector<std::string>) {
     // will need a mode argument as well
     //}
@@ -196,7 +198,8 @@ namespace SeqView {
                     int _width, int _height, SeqSet &sq);
 
             SeqWindow(int upperleftX, int upperleftY, 
-                    int _width, int _height, string filename);
+                    int _width, int _height, string filename,
+                    void (*parser)(string filename, SeqSet &data)=&parseFasta);
 
             ~SeqWindow();
 
@@ -257,6 +260,5 @@ namespace SeqView {
             void handle_special_command();
     };
 
-    void parseFasta(string filename, SeqSet &data);
 }
 #endif
