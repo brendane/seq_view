@@ -87,40 +87,49 @@ namespace SeqView {
 
 
     std::vector<bool> SeqSet::do_compare(std::vector<string> s) {
-        // For now, just a simple comparison that considers ambiguities
-        // in nucleotide sequence; anything that is not an IUPAC DNA
-        // letter is considered completely ambiguous
-
         std::vector <bool> ret;
         ret.reserve(s[0].size());
         for(int pos = 0; pos < s[0].size(); pos++) {
-            // A, T, C, G
-            bool matches[4] = {true, true, true, true};
+            char matches = 15; // bit array to hold matches to A,T,C,G
             bool match = true;
             bool all_spaces = true;
             for(int i = 0; i < s.size(); i++) {
-                char ch = s[i][pos];
+                char ch = toupper(s[i][pos]);
                 if(ch != ' ')
                     all_spaces = false;
-                if(ch == 'A' || ch == 'a') {
-                    matches[1] = false;
-                    matches[2] = false;
-                    matches[3] = false;
-                } else if(ch == 'T' || ch == 't') {
-                    matches[0] = false;
-                    matches[2] = false;
-                    matches[3] = false;
-                } else if(ch == 'C' || ch == 'c') {
-                    matches[0] = false;
-                    matches[1] = false;
-                    matches[3] = false;
-                } else if(ch == 'G' || ch == 'g') {
-                    matches[0] = false;
-                    matches[1] = false;
-                    matches[2] = false;
+                if(ch == 'A') {
+                    matches &= ~14;
+                } else if(ch == 'T') {
+                    matches &= ~13;
+                } else if(ch == 'C') {
+                    matches &= ~11;
+                } else if(ch == 'G') {
+                    matches &= ~7;
+                } else if(ch == 'N' || ch == 'X' || ch == '-' || ch == ' ') {
+                } else if(ch == 'M') {
+                    matches &= ~5;
+                } else if(ch == 'R') {
+                    matches &= ~9;
+                } else if(ch == 'W') {
+                    matches &= ~3;
+                } else if(ch == 'S') {
+                    matches &= ~12;
+                } else if(ch == 'Y') {
+                    matches &= ~6;
+                } else if(ch == 'K') {
+                    matches &= ~10;
+                } else if(ch == 'V') {
+                    matches &= ~2;
+                } else if(ch == 'H') {
+                    matches &= ~8;
+                } else if(ch == 'D') {
+                    matches &= ~4;
+                } else if(ch == 'B') {
+                    matches &= ~1;
+                } else {
+                    matches = 0;
                 }
-                // IUPAC ambiguity codes go here
-                if(!matches[0] && !matches[1] && !matches[2] && !matches[3]) {
+                if(matches == 0) {
                     match = false;
                     break;
                 }
@@ -132,7 +141,6 @@ namespace SeqView {
         }
         return ret;
     }
-
 
     char * SeqSet::column(int64_t pos) {
         char ret[nseqs];
