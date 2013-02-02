@@ -170,7 +170,7 @@ namespace SeqView {
 
     SeqWindow::SeqWindow(int upperleftX, int upperleftY, 
             int _width, int _height, string filename,
-            void (*parser)(string filename, SeqSet &data)) {
+            ParserFunction parser) {
         SeqSet sq;
         parser(filename, sq);
         window = newwin(_height, _width, upperleftY, upperleftX);

@@ -147,36 +147,52 @@ namespace SeqView {
             void append(SeqRecord rec);
     };
 
+
+
+    /*
+     * PARSER DECLARATIONS
+     *
+     * ParserFunction defines the type for functions that take a
+     * filename and a reference to a SeqSet object and fill the
+     * SeqSet with data from the file.
+     *
+     */
+
+    typedef void (*ParserFunction)(string filename, SeqSet &data);
     void parseFasta(string filename, SeqSet &data);
 
-    //std::vector<bool> compare(std::vector<std::string>) {
-    // will need a mode argument as well
-    //}
 
+    /*
+     * SeqWindow contains a single SeqSet object (one alignment) and
+     * information about how it should be displayed:
+     *   mode, position, etc.
+     *
+     * Also contains a pointer to the curses window the sequences
+     * should be displayed in.
+     *
+     * Destructor prints the window over with blank spaces and
+     * calls delwin.
+     *
+     */
+     
     class SeqWindow {
-        /*
-         * Class to represent a SeqSet display
-         *
-         * Very much a stub
-         *
-         */
         private:
-            WINDOW * window; // the ncurses window this maps to
+            WINDOW * window;        // the ncurses window this maps to
             SeqSet seqs;
             int scrollmode;
             DisplayMode display_mode;
-            int width;
-            int height;
-            int names_width; // width allocated for names
-            int64_t first_seq; // first sequence record, 0-based
-            int64_t first_pos; // leftmost position in window; 0-based
-            int num_pos_displayed;
-            int num_seqs_displayed;
-            int64_t last_pos;
-            int64_t last_seq;
-            bool isfocal;
-            bool modified;
-            bool compare;
+            int width;              // window height
+            int height;             // window width
+            int names_width;        // width allocated for names
+            int64_t first_seq;      // first sequence record, 0-based
+            int64_t first_pos;      // leftmost position in window; 0-based
+            int num_pos_displayed;  // Number of positions (width of window - width allocated to names)
+            int num_seqs_displayed; // Number of records = height of window - lines allocated to other information
+            int64_t last_pos;       // rightmost position
+            int64_t last_seq;       // bottom sequence
+            bool isfocal;           // whether this is the focal window
+            bool modified;          // flag to determine whether to redraw the window
+            bool compare;           // whether comparison is on
 
             void _scroll(int64_t newleft, int64_t newtop);
 
@@ -199,7 +215,7 @@ namespace SeqView {
 
             SeqWindow(int upperleftX, int upperleftY, 
                     int _width, int _height, string filename,
-                    void (*parser)(string filename, SeqSet &data)=&parseFasta);
+                    ParserFunction parser=&parseFasta);
 
             ~SeqWindow();
 
