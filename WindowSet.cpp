@@ -143,10 +143,26 @@ namespace SeqView {
     }
 
     void WindowSet::handle_special_command() {
+        /* 
+         * TODO:
+         *  1) Implement arrow keys
+         *  2) Implement a simple command history
+         *  3) Allow commands to stretch over more than one line:
+         *     - keep track of line length relative to window width
+         *     - keep track of which line
+         *     - when command is run, remember to redisplay the bottom
+         *       window if the command took up multiple lines.
+         *  4) DELETE KEY
+         *  5) HOME, END keys
+         *  6) Tab file completion
+         */
         for(int i = 0; i <= width; i++)
             mvwaddch(stdscr, height - 1, i, ' ');
         mvwprintw(stdscr, height - 1, 0, ";");
         string buffer = "";
+        int cursor = 0; // where to insert the new character
+        int line = height - 1; // line to print commands - to deal with
+                               // long commands
         char ch;
         while(true) {
             ch = getch();
@@ -156,8 +172,10 @@ namespace SeqView {
 
             // Backspace
             if(ch == KEY_BACKSPACE || ch == KEY_DL || ch == 7) {
-                if(buffer.size())
+                if(buffer.size()) {
                     backspace();
+                    cursor -= 1;
+                }
                 if(buffer.size())
                     buffer.erase(buffer.size() - 1);
                 continue;
@@ -172,8 +190,9 @@ namespace SeqView {
                     mvwaddch(stdscr, height - 1, i, ' ');
                 return; // ESC key
             }
-            waddch(stdscr, ch);
-            buffer += ch;
+            waddch(stdscr, ch); // Also modify to deal with cursor
+            buffer += ch; // This can be modified to deal with arrow keys
+            cursor += 1;
         }
 
         // break buffer into tokens separated by spaces
@@ -200,24 +219,19 @@ namespace SeqView {
             // Eventually this should allow file completion
             // on tab.
             if(!tokens[0].compare("open") && tokens.size() == 2) {
-                // Clear space
-                for(int i = 0; i <= width; i++)
-                    mvwaddch(stdscr, height - 1, i, ' ');
+                clear_line(height - 1);
                 add_window(tokens[1]);
             } else if(!tokens[0].compare("mode") && tokens.size() == 2) {
                 if(!tokens[1].compare("codon"))
                     handle_command(Command(DISPLAYMODE, 2));
                 if(!tokens[1].compare("normal"))
                     handle_command(Command(DISPLAYMODE, 1));
-                for(int i = 0; i <= width; i++)
-                    mvwaddch(stdscr, height - 1, i, ' ');
+                clear_line(height - 1);
             } else {
-                for(int i = 0; i <= width; i++)
-                    mvwaddch(stdscr, height - 1, i, ' ');
+                clear_line(height - 1);
             }
         } else {
-            for(int i = 0; i <= width; i++)
-                mvwaddch(stdscr, height - 1, i, ' ');
+            clear_line(height - 1);
         }
     }
 }

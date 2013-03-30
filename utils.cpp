@@ -30,6 +30,13 @@ namespace SeqView {
         wmove(stdscr, y, x - 1);
     }
 
+    void clear_line(int line) {
+        int y, x;
+        getmaxyx(stdscr, y, x);
+        for(int i = 0; i <= x; i++)
+            mvwaddch(stdscr, line, i, ' ');
+    }
+
     void initDisplay() {
         initscr();
         clear();

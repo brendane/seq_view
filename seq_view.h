@@ -54,6 +54,7 @@ namespace SeqView {
 
     void initDisplay();
     void backspace();
+    void clear_line(int line);
 
 
     /*
