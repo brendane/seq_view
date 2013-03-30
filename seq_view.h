@@ -48,8 +48,17 @@ using std::set;
 
 namespace SeqView {
     
+    /*
+     * Utilities
+     */
+
     void initDisplay();
     void backspace();
+
+
+    /*
+     * Command-related declarations
+     */
 
     enum Com {QUIT, SCROLLUP, SCROLLDOWN, SCROLLRIGHT, SCROLLLEFT,
         COMPARETOGGLE, SCROLLMODE, COMPAREMODE, GOTO,
@@ -63,9 +72,17 @@ namespace SeqView {
 
     enum DisplayMode {NORMAL, CODON};
 
-
     enum SeqType {dna, rna, aa, unknown};
 
+
+    /*
+     * Typedef for comparison functions; these are implemented in
+     * Comparison.cpp
+     */
+
+    std::vector<bool> simple_compare(std::vector<string> s);
+    std::vector<bool> nuc_compare(std::vector<string> s);
+    std::vector<bool> aa_compare(std::vector<string> s);
 
     class SeqRecord {
 
@@ -134,13 +151,11 @@ namespace SeqView {
             std::vector<std::string> nameSlice(int64_t first,
                     int64_t last);
 
+            // The string vector is the set of sequences to display
+            // The boolean vector is whether there is a match
             std::pair< std::vector<std::string>, std::vector<bool> >
                 slice(int64_t beg, int64_t end, int64_t first, int64_t last,
                       DisplayMode mode, bool compare);
-
-
-            std::vector<bool> do_compare(std::vector<string> s);
-
 
             char * column(int64_t pos);
 

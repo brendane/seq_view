@@ -81,66 +81,9 @@ namespace SeqView {
             ret.reserve(last - first + 1);
             std::vector<bool> comps;
             if(compare)
-                comps = do_compare(_slice(beg, end, 0, numseqs(), mode));
+                comps = nuc_compare(_slice(beg, end, 0, numseqs(), mode));
             return std::make_pair(ret, comps);
         }
-
-
-    std::vector<bool> SeqSet::do_compare(std::vector<string> s) {
-        std::vector <bool> ret;
-        ret.reserve(s[0].size());
-        for(int pos = 0; pos < s[0].size(); pos++) {
-            char matches = 15; // bit array to hold matches to A,T,C,G
-            bool match = true;
-            bool all_spaces = true;
-            for(int i = 0; i < s.size(); i++) {
-                char ch = toupper(s[i][pos]);
-                if(ch != ' ')
-                    all_spaces = false;
-                if(ch == 'A') {
-                    matches &= ~14;
-                } else if(ch == 'T') {
-                    matches &= ~13;
-                } else if(ch == 'C') {
-                    matches &= ~11;
-                } else if(ch == 'G') {
-                    matches &= ~7;
-                } else if(ch == 'N' || ch == 'X' || ch == '-' || ch == ' ') {
-                } else if(ch == 'M') {
-                    matches &= ~5;
-                } else if(ch == 'R') {
-                    matches &= ~9;
-                } else if(ch == 'W') {
-                    matches &= ~3;
-                } else if(ch == 'S') {
-                    matches &= ~12;
-                } else if(ch == 'Y') {
-                    matches &= ~6;
-                } else if(ch == 'K') {
-                    matches &= ~10;
-                } else if(ch == 'V') {
-                    matches &= ~2;
-                } else if(ch == 'H') {
-                    matches &= ~8;
-                } else if(ch == 'D') {
-                    matches &= ~4;
-                } else if(ch == 'B') {
-                    matches &= ~1;
-                } else {
-                    matches = 0;
-                }
-                if(matches == 0) {
-                    match = false;
-                    break;
-                }
-            }
-            if(match && !all_spaces)
-                ret.push_back(true);
-            else
-                ret.push_back(false);
-        }
-        return ret;
-    }
 
     char * SeqSet::column(int64_t pos) {
         char ret[nseqs];
