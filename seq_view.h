@@ -106,6 +106,7 @@ namespace SeqView {
 
             std::string getSeq();
 
+            // beg and end are 0-based.
             std::string getSeq(int64_t beg, int64_t end, 
                                DisplayMode mode, int frame=1);
 
