@@ -23,7 +23,24 @@ namespace SeqView {
     }
 
     void initDisplay() {
-        initscr();
+        //initscr();
+
+        // Use in place of initscr so that we can read files from stdin.
+        // Very much obliged to https://gist.github.com/dreiss/226539
+        // (David Reiss).
+        const char* term_type = getenv("TERM");
+        if (term_type == NULL || *term_type == '\0') {
+            term_type = "unknown";
+        }
+        FILE* term_in = fopen("/dev/tty", "r");
+        if (term_in == NULL) {
+            perror("fopen(/dev/tty)");
+            exit(EXIT_FAILURE);
+        }
+        SCREEN* main_screen = newterm(term_type, stdout, term_in);
+        set_term(main_screen);
+        // End replacement for initscr();
+
         clear();
         cbreak();
         noecho();

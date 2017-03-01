@@ -5,7 +5,15 @@ namespace SeqView {
     void parseFasta(string filename, SeqSet &data) {
 
         //try {
-            ifstream input(filename.c_str(), ifstream::in);
+            //istream * inputstream;
+            ifstream input;
+            std::istream * input_stream;
+            if(filename == "-") {
+                input_stream = &std::cin;
+            } else {
+                input.open(filename.c_str(), ifstream::in);
+                input_stream = &input;
+            }
 
             data.filename = filename;
 
@@ -14,7 +22,7 @@ namespace SeqView {
             string nm;
 
             // Enclose all of this in a while loop that goes to EOF:
-            input.get(ch);
+            input_stream->get(ch);
             if(ch != '>') {
                 throw("Not in FASTA format");
             }
@@ -22,11 +30,11 @@ namespace SeqView {
 
             bool inseq = false;
             bool linebreak = false;
-            while(!input.eof()) {
+            while(!input_stream->eof()) {
                 SeqRecord rec;
                 nm = "";
                 while (true && !inseq) {
-                    input.get(ch);
+                    input_stream->get(ch);
                     if (ch == '\n' || ch == '\r')
                         inseq = true;
                     nm += ch;
@@ -35,8 +43,8 @@ namespace SeqView {
 
                 temp = "";
                 while(inseq){
-                    input.get(ch);
-                    if(input.eof())
+                    input_stream->get(ch);
+                    if(input_stream->eof())
                         break;
 
                     // ">" after a linebreak means a new name
@@ -66,5 +74,7 @@ namespace SeqView {
         //} catch (...) {
         //    throw("Problem parsing file");
         //}
+
+        input.close();
     }
 }
