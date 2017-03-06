@@ -7,6 +7,9 @@ useful when I'm logged into a server remotely and I want to look at some
 fasta files. It's a bit like samtools tview, but for sequence files
 (currently just FASTA format) instead of read alignments.
 
+### Screenshot:
+![](screenshot.png)
+
 ##Installation
 
 ==================================================
