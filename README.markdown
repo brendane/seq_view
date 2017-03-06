@@ -1,10 +1,11 @@
 #seq_view
 
-Program to display molecular sequence files using ncurses. Meant to be
-an intermediate step between the Unix command line tools and graphical
-sequence editing programs.
-
-Rewritten in C++.
+Program to display molecular sequence files using ncurses and a vim-like
+user interface. Meant to be an intermediate step between the Unix
+command line tools and graphical sequence editing programs. I find it
+useful when I'm logged into a server remotely and I want to look at some
+fasta files. It's a bit like samtools tview, but for sequence files
+(currently just FASTA format) instead of read alignments.
 
 ##Installation
 
@@ -32,11 +33,12 @@ g++ -o seq_view *.cpp -I"." -lcurses
 seq_view FASTA_FILE [FILE, FILE, ...]
 
 At present, seq_view can only read FASTA files (more file formats may be
-added in the future).
+added in the future). Use "-" to read from stdin.
 
-Once the file is open, a set of keyboard command, similar to vim's
+Once the file is open, a set of keyboard commands, similar to vim's
 commands can be used to move through the data and control the
-appearance. To cancel any command type ESC.
+appearance. To cancel any command type ESC. To quit use Ctrl-C or type
+'q'.
 
 ####KEY                 ACTION
 
