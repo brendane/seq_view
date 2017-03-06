@@ -8,7 +8,11 @@ fasta files. It's a bit like samtools tview, but for sequence files
 (currently just FASTA format) instead of read alignments.
 
 ### Screenshot:
+A single fasta file in codon mode:
 ![](screenshot.png)
+
+Two files displayed at once, showing comparison mode:
+![](two-files.png)
 
 ##Installation
 
