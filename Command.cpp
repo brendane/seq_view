@@ -77,6 +77,12 @@ namespace SeqView {
                     }
                     return Command(CHANGEFOCUS, param);
                 }
+                if(!command_buffer.compare("W")) {
+                    if(param_buffer.length() == 0) {
+                        param = 0;
+                    }
+                    return Command(CHANGEFOCUSREV, param);
+                }
                 if(!command_buffer.compare("G")) {
                     if(param_buffer.length()) {
                         return Command(GOTO, param);

@@ -120,6 +120,15 @@ namespace SeqView {
                 change_focus(command.second - 1);
                 return true;
             }
+            if(command.first == CHANGEFOCUSREV) {
+                if(command.second == 0) {
+                    command.second = focal_window; // Subtract nothing b/c command is 1 based, but focal_window is 0 based
+                    if(command.second == 0)
+                        command.second = windows.size();
+                }
+                change_focus(command.second - 1);
+                return true;
+            }
             if(command.first == SPECIAL) {
                 handle_special_command();
                 return true;
