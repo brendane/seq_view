@@ -91,6 +91,7 @@ namespace SeqView {
         int row = 2;
         char ch;
         int col;
+        wattron(window, A_BOLD);
         for(int i = 0; i < num_seqs_displayed - 1; i++) {
             for(int j = 0; j < sequences[i].length(); j++) {
                 if(compare && comps[j] && (i + first_seq) < seqs.numseqs())
@@ -113,6 +114,7 @@ namespace SeqView {
             }
             row++;
         }
+        wattroff(window, A_BOLD);
     }
 
     void SeqWindow::_display_filename() {
