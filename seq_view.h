@@ -177,7 +177,7 @@ namespace SeqView {
 
     typedef void (*ParserFunction)(string filename, SeqSet &data);
     void parseFasta(string filename, SeqSet &data);
-
+    std::istream * openSeqFile(string filename, ifstream &input);
 
     /*
      * SeqWindow contains a single SeqSet object (one alignment) and
