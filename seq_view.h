@@ -64,8 +64,8 @@ namespace SeqView {
     enum Com {QUIT, SCROLLUP, SCROLLDOWN, SCROLLRIGHT, SCROLLLEFT,
         COMPARETOGGLE, SCROLLMODE, COMPAREMODE, GOTO,
         GOTOEND, GOTOBEGIN, SCROLLTOP, SCROLLBOTTOM,
-        SHOWHELP, CHANGEFOCUS, NAMEWIDTH, 
-        SPECIAL, DISPLAYMODE, SETFRAME, COMPARE};
+        SHOWHELP, CHANGEFOCUS, CHANGEFOCUSREV, NAMEWIDTH, 
+        SPECIAL, DISPLAYMODE, SETFRAME, COMPARE, TOGGLEBOLD};
     typedef std::pair<Com, int> Command;
     extern Com ssc[];
     extern set<int> seqSetCommands;
@@ -210,6 +210,7 @@ namespace SeqView {
             bool isfocal;           // whether this is the focal window
             bool modified;          // flag to determine whether to redraw the window
             bool compare;           // whether comparison is on
+            bool bolded;            // whether the sequences are displayed in bold
 
             void _scroll(int64_t newleft, int64_t newtop);
 

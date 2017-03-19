@@ -121,11 +121,9 @@ namespace SeqView {
                 return true;
             }
             if(command.first == CHANGEFOCUSREV) {
-                if(command.second == 0) {
-                    command.second = focal_window; // Subtract nothing b/c command is 1 based, but focal_window is 0 based
-                    if(command.second == 0)
-                        command.second = windows.size();
-                }
+                command.second = focal_window; // Subtract nothing b/c command is 1 based, but focal_window is 0 based
+                if(command.second == 0)
+                    command.second = windows.size();
                 change_focus(command.second - 1);
                 return true;
             }
@@ -221,6 +219,8 @@ namespace SeqView {
                 if(!tokens[1].compare("normal"))
                     handle_command(Command(DISPLAYMODE, 1));
                 clear_line(height - 1);
+            } else if(!tokens[0].compare("bold") && tokens.size() == 2) {
+                handle_command(Command(TOGGLEBOLD, 0));
             } else {
                 clear_line(height - 1);
             }

@@ -55,6 +55,7 @@ q                   Close current window. When last window is closed,
                     the program quits.
 
 w                   Cycle through windows
+W                   Cycle through windows backwards
 
 [number]w           Move to window *number* (1 based)
 
@@ -112,6 +113,8 @@ right now:
 
 "mode":             Type ";mode MODE" to switch display mode
                     ("normal" or "codon" right now).
+
+"bold":             Toggle bolded sequence display.
 
 
 ### Comparison modes
