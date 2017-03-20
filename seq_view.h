@@ -27,28 +27,44 @@
 #ifndef SEQVIEW_H
 #define SEQVIEW_H
 
+#include <math.h>
+#include <ctype.h>
+#include <stdlib.h>
+
+#include <exception>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <set>
+#include <stdint.h>
 #include <string>
 #include <vector>
-#include <stdint.h>
-#include <math.h>
-#include <iostream>
-#include <fstream>
+
 #include <ncurses.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <exception>
-#include <set>
 
 using std::cout;
-using std::getline;
 using std::endl;
-using std::string;
-using std::ifstream;
 using std::exception;
+using std::getline;
+using std::ifstream;
+using std::map;
 using std::set;
+using std::string;
 
 namespace SeqView {
-    
+
+    /*
+     * Settings
+     */
+    typedef std::map<char,int> ColMap;
+    typedef ColMap::const_iterator ColMapIt;
+    const ColMap dna_colors = {
+        {'A', 1}, {'a', 1}, {'T', 2}, {'t', 2},
+        {'G', 3}, {'G', 3}, {'C', 4}, {'C', 4},
+        {'N', 7}, {'n', 7}, {'-', 7}, {'*', 7}}; // Has to be const if defined here
+    const ColMap aa_colors = {
+    };
+
     /*
      * Utilities
      */

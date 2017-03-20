@@ -98,16 +98,13 @@ namespace SeqView {
                 ch = sequences[i][j];
                 if(compare && comps[j] && (i + first_seq) < seqs.numseqs() && ch != ' ')
                     wattron(window, A_REVERSE);
-                if(ch == 'A' || ch == 'a')
-                    wattron(window, COLOR_PAIR(1));
-                else if(ch == 'T' || ch == 't')
-                    wattron(window, COLOR_PAIR(2));
-                else if(ch == 'G' || ch == 'g')
-                    wattron(window, COLOR_PAIR(3));
-                else if(ch == 'C' || ch == 'c')
-                    wattron(window, COLOR_PAIR(4));
-                else
-                    col = 7;
+                ColMapIt cit = dna_colors.find(ch);
+                if(cit != dna_colors.end()) {
+                    col = cit->second;
+                } else {
+                    col = dna_colors.find('*')->second; // Don't know why dna_colors['*'] doesn't work
+                }
+                wattron(window, COLOR_PAIR(col));
                 mvwaddch(window, row, names_width + 1 + j, ch);
                 wattroff(window, COLOR_PAIR(col));
                 if(compare && comps[j])
