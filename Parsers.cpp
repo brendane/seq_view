@@ -2,6 +2,19 @@
 
 namespace SeqView {
 
+    void parseSeqs(string filename, SeqSet &data) {
+        ifstream input;
+        std::istream * input_stream = openSeqFile(filename, input);
+        if(!input_stream->good()) {
+            throw("File stream is in a bad state");
+        }
+        //string format = guessFormat(input_stream);
+        //if(format == "fasta") {
+            //parseFasta(filename, input_stream); -> Modified to not open or close the file
+        //}
+        input.close();
+    }
+
     std::istream * openSeqFile(string filename, ifstream &input) {
         std::istream * input_stream;
         if(filename == "-") {
@@ -10,8 +23,10 @@ namespace SeqView {
             input.open(filename.c_str(), ifstream::in);
             input_stream = &input;
         }
-        if(!input_stream->good())
+        if(!input_stream->good()) {
+            input.close();
             throw("Problem reading file");
+        }
         return input_stream;
     }
 
@@ -21,15 +36,20 @@ namespace SeqView {
         std::istream * input_stream;
         input_stream = openSeqFile(filename, input);
 
+        // This causes errors right now:
+        //std::cerr << guessFormat(input_stream) << std::endl;
+
         data.filename = filename;
 
         char ch;
         string temp = "";
         string nm;
+        unsigned size_guess = 10000; // Seems like it might speed things up
 
         // Enclose all of this in a while loop that goes to EOF:
         input_stream->get(ch);
         if(ch != '>') {
+            input.close();
             throw("Not in FASTA format");
         }
 
@@ -38,10 +58,13 @@ namespace SeqView {
         bool linebreak = false;
         while(!input_stream->eof()) {
             SeqRecord rec;
+            rec.reserve(size_guess);
             nm = "";
             while (true && !inseq) {
-                if(!input_stream->good())
+                if(!input_stream->good()) {
+                    input.close();
                     throw("Problem reading file");
+                }
                 input_stream->get(ch);
                 if (ch == '\n' || ch == '\r')
                     inseq = true;
@@ -78,6 +101,7 @@ namespace SeqView {
             }
             rec.append(temp);
             data.append(rec);
+            size_guess = rec.getSeq().size();
         }
 
         input.close();
@@ -86,9 +110,13 @@ namespace SeqView {
     // This function should be placed within another function that
     // creates, opens, and closes the istream*, and also runs the
     // parsing function.
-    // NEED TO #include <ctype.h>
-    /*
-    string guessFormat(string &filename, std::istream * is, string &format) {
+
+    string guessFormat(std::istream * is) {
+        string format = "";
+        return guessFormat(is, format);
+    }
+
+    string guessFormat(std::istream * is, string &format) {
 
         // If the format is already determined, skip guessing
         if(format.size() > 0) {
@@ -97,16 +125,21 @@ namespace SeqView {
 
         // Make sure the stream is okay before reading
         if(!is->good()) {
+            std::cerr << "bad state!!!" << std::endl;
             throw("File stream is in a bad state");
         }
+        std::streampos sp = is->tellg();
 
-        // Look at the first 1000 characters of the file to determine
+        // Look at the first 199 characters of the file to determine
         // format
-        char buffer[1000];
-        is->getline(buffer, 1000);
+        char buffer[200];
+        // I want to just read 200 chars without checking for a delim;
+        // seems unlikely that XXX will be in a sequence file
+        is->getline(buffer, 199, '\n');
+        int nread = std::char_traits<char>::length(buffer);
         char c;
         unsigned k = 0;
-        while(k < 1000) {
+        while(k < 199 && k < nread) {
             c = buffer[k];
             k++;
             if(c == '\n' || c == '\r' || c == ' ' || c == '\t')
@@ -119,19 +152,19 @@ namespace SeqView {
                 format = "fastq";
                 break;
             }
-            if(toupper(c) == 'L' && k < 1000-4 &&
+            if(toupper(c) == 'L' && k < 199-4 &&
                     toupper(buffer[k+1]) == 'O' &&
                     toupper(buffer[k+2]) == 'C' &&
                     toupper(buffer[k+3]) == 'U' &&
-                    toupper(buffer[k+4] == 'S') {
+                    toupper(buffer[k+4]) == 'S') {
                     format = "genbank";
                     break;
             }
-            if(toupper(c) == 'N' && k < 1000-4 &&
+            if(toupper(c) == 'N' && k < 199-4 &&
                     toupper(buffer[k+1]) == 'E' &&
                     toupper(buffer[k+2]) == 'X' &&
                     toupper(buffer[k+3]) == 'U' &&
-                    toupper(buffer[k+4] == 'S') {
+                    toupper(buffer[k+4]) == 'S') {
                     format = "nexus";
                     break;
             }
@@ -151,29 +184,37 @@ namespace SeqView {
 
         } // End format guessing loop
 
-        / *
         // Put all the characters back on the stream for the parsing
         // function
-        for(; k > 0; k--) {
-            is->putback(buffer[k]);
-            if(!is->good()) {
+        // This doesn't work because you often can't put more than
+        // one character back.
+        // Need a class that wrap ifstream with get, good, and eof methods
+        // but will take characters from a buffer until it runs out and
+        // then from the ifstream. It would read 200 characters into the
+        // buffer when initialized.
+        /*
+        for(int i = nread-1; i > -1; i--) {
+            is->putback(buffer[i]);
+            if(is->fail()) {
+                std::cerr << "problem resetting!!!" << std::endl;
                 throw("Problem resetting file stream");
             }
         } // End put back
-        * /
-        // Put back just the last character (all leading whitespace
-        // trimmed off this way):
-        is->putback(buffer[k]);
+        */
+        // This works for regular files, but not for stdin
+        is->seekg(sp);
+        if(!is->good()) {
+            std::cerr << "problem resetting!!!" << std::endl;
+            throw("Problem resetting file stream");
+        }
 
         // Throw an exception if the format was undetermined
-        if(format.size() == 0)
-            throw("Could not determine format from first 1000 characters");
+        if(format.size() == 0) {
+            std::cerr << "format unknown!!!" << std::endl;
+            throw("Could not determine format from first 199 characters");
+        }
 
         return format;
     }
 
-    string guessFormat(string &filename, std::istream * is) {
-        return guessFormat(filename, is, "");
-    }
-    */
 }

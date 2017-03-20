@@ -35,6 +35,7 @@
 #include <fstream>
 #include <ncurses.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <exception>
 #include <set>
 
@@ -103,6 +104,8 @@ namespace SeqView {
             void append(std::string sq, SeqType tp=unknown);
 
             void append(SeqRecord sq);
+
+            void reserve(unsigned new_cap);
 
             std::string getSeq();
 
@@ -177,6 +180,8 @@ namespace SeqView {
 
     typedef void (*ParserFunction)(string filename, SeqSet &data);
     void parseFasta(string filename, SeqSet &data);
+    string guessFormat(std::istream * is, string &format);
+    string guessFormat(std::istream * is);
     std::istream * openSeqFile(string filename, ifstream &input);
 
     /*

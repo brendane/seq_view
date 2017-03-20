@@ -30,6 +30,10 @@ namespace SeqView {
         }
     }
 
+    void SeqRecord::reserve(unsigned new_cap) {
+        seq.reserve(new_cap);
+    }
+
     std::string SeqRecord::getSeq() {
         return seq;
     }
