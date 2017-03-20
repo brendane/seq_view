@@ -95,9 +95,9 @@ namespace SeqView {
             wattron(window, A_BOLD);
         for(int i = 0; i < num_seqs_displayed - 1; i++) {
             for(int j = 0; j < sequences[i].length(); j++) {
-                if(compare && comps[j] && (i + first_seq) < seqs.numseqs())
-                    wattron(window, A_REVERSE);
                 ch = sequences[i][j];
+                if(compare && comps[j] && (i + first_seq) < seqs.numseqs() && ch != ' ')
+                    wattron(window, A_REVERSE);
                 if(ch == 'A' || ch == 'a')
                     wattron(window, COLOR_PAIR(1));
                 else if(ch == 'T' || ch == 't')
