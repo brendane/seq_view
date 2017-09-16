@@ -33,8 +33,7 @@ namespace SeqView {
     void parseFasta(string filename, SeqSet &data) {
 
         ifstream input;
-        std::istream * input_stream;
-        input_stream = openSeqFile(filename, input);
+        SeqStream input_stream(openSeqFile(filename, input));
 
         // This causes errors right now:
         //std::cerr << guessFormat(input_stream) << std::endl;
@@ -47,7 +46,7 @@ namespace SeqView {
         unsigned size_guess = 10000; // Seems like it might speed things up
 
         // Enclose all of this in a while loop that goes to EOF:
-        input_stream->get(ch);
+        input_stream.get(ch);
         if(ch != '>') {
             input.close();
             throw("Not in FASTA format");
@@ -56,16 +55,16 @@ namespace SeqView {
 
         bool inseq = false;
         bool linebreak = false;
-        while(!input_stream->eof()) {
+        while(!input_stream.eof()) {
             SeqRecord rec;
             rec.reserve(size_guess);
             nm = "";
             while (true && !inseq) {
-                if(!input_stream->good()) {
+                if(!input_stream.good()) {
                     input.close();
                     throw("Problem reading file");
                 }
-                input_stream->get(ch);
+                input_stream.get(ch);
                 if (ch == '\n' || ch == '\r')
                     inseq = true;
                 nm += ch;
@@ -74,8 +73,8 @@ namespace SeqView {
 
             temp = "";
             while(inseq){
-                input_stream->get(ch);
-                if(input_stream->eof())
+                input_stream.get(ch);
+                if(input_stream.eof())
                     break;
 
                 // ">" after a linebreak means a new name
@@ -103,7 +102,6 @@ namespace SeqView {
             data.append(rec);
             size_guess = rec.getSeq().size();
         }
-
         input.close();
     }
 

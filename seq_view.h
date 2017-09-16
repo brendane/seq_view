@@ -47,6 +47,7 @@ using std::endl;
 using std::exception;
 using std::getline;
 using std::ifstream;
+using std::istream;
 using std::map;
 using std::set;
 using std::string;
@@ -311,6 +312,21 @@ namespace SeqView {
             bool handle_command(Command command);
 
             void handle_special_command();
+    };
+
+    class SeqStream {
+        private:
+            istream * is;
+            char buffer[200];
+            unsigned ipos;
+            unsigned opos;
+
+        public:
+            SeqStream(istream * is_);
+            bool good();
+            bool eof();
+            void get(char &ch);
+            bool start_over();
     };
 
 }
