@@ -133,7 +133,7 @@ namespace SeqView {
     SeqWindow::SeqWindow() {
         modified = true;
         compare = false;
-        bolded = true;
+        bolded = false;
     }
 
     SeqWindow::SeqWindow(int upperleftX, int upperleftY, 
@@ -150,7 +150,7 @@ namespace SeqView {
         update_size();
         _recalculate_num_displayed();
         isfocal = true;
-        bolded = true;
+        bolded = false;
         modified = true;
         compare = false;
         display();
@@ -172,7 +172,7 @@ namespace SeqView {
         first_seq = 0;
         update_size();
         _recalculate_num_displayed();
-        bolded = true;
+        bolded = false;
         modified = true;
         compare = false;
         display();

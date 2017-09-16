@@ -4,7 +4,7 @@
  *
  * To compile:
  *  Make sure seq_view.h is in the same directory
- *  g++ -o seq_view *.cpp -I"." -lncurses
+ *  g++ -o seq_view *.cpp -I"." -lncurses --std=c++11
  *
  */
 

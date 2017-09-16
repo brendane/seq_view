@@ -132,6 +132,7 @@ namespace SeqView {
                 return true;
             }
         }
+        return true;
     }
 
     void WindowSet::handle_special_command() {

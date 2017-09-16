@@ -28,7 +28,13 @@ namespace SeqView {
         // Use in place of initscr so that we can read files from stdin.
         // Very much obliged to https://gist.github.com/dreiss/226539
         // (David Reiss).
-        const char* term_type = getenv("TERM");
+        // This causes some issues: declaring as const char* causes errors
+        // with gcc 5 and declaring as just char* gives a warning. Storing
+        // as a std::string and using .c_str() in newterm() fails too.
+        // Ideally, this is copied to a regular char* to prevent errors
+        // and warnings.
+        //const char* term_type = getenv("TERM");
+        char* term_type = getenv("TERM");
         if (term_type == NULL || *term_type == '\0') {
             term_type = "unknown";
         }

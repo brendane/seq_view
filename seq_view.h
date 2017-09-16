@@ -60,10 +60,8 @@ namespace SeqView {
     typedef ColMap::const_iterator ColMapIt;
     const ColMap dna_colors = {
         {'A', 1}, {'a', 1}, {'T', 2}, {'t', 2},
-        {'G', 3}, {'G', 3}, {'C', 4}, {'C', 4},
+        {'G', 3}, {'g', 3}, {'C', 6}, {'c', 6},
         {'N', 7}, {'n', 7}, {'-', 7}, {'*', 7}}; // Has to be const if defined here
-    const ColMap aa_colors = {
-    };
 
     /*
      * Utilities
