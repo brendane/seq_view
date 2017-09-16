@@ -66,6 +66,12 @@ namespace SeqView {
                     mvwprintw(window, 1, col, " ");
                 }
             }
+            if(display_mode == TEN) {
+                if(i % 10 == 0) {
+                    col++;
+                    mvwprintw(window, 1, col, " ");
+                }
+            }
             col++;
             if(col >= width)
                 break;
@@ -256,6 +262,7 @@ namespace SeqView {
         } else if(com_name == GOTOEND) {
             _scroll(seqs.length() - 1, first_seq);
         } else if(com_name == GOTO) {
+            // Do I need to add something here for display_mode == TEN ?
             newpos = param - 1 - (width - names_width) / 2;
             if(display_mode == CODON)
                 newpos += (width - names_width) / 6;
@@ -269,10 +276,13 @@ namespace SeqView {
         } else if(com_name == NAMEWIDTH) {
             change_name_width(param);
         } else if(com_name == DISPLAYMODE) {
-            if(param == 1)
+            if(param == 1) {
                 display_mode = NORMAL;
-            else if(param == 2)
+            } else if(param == 2) {
                 display_mode = CODON;
+            } else if(param == 3) {
+                display_mode = TEN;
+            }
             modified = true;
         } else if(com_name == SETFRAME) {
             seqs.set_frame(param);

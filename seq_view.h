@@ -86,7 +86,7 @@ namespace SeqView {
     extern set<int> seqSetCommands;
     Command getCommand();
 
-    enum DisplayMode {NORMAL, CODON};
+    enum DisplayMode {NORMAL, CODON, TEN};
 
     enum SeqType {dna, rna, aa, unknown};
 

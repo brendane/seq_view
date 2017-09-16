@@ -61,6 +61,18 @@ namespace SeqView {
                         pos++;
                     }
                     ret += string(end - length() - 1, ' ');
+                } else if(mode == TEN) {
+                    int pos = beg;
+                    for(int i = 0; i < length() - beg; i++) {
+                        if((pos + 1) % 10 == 0) {
+                            ret += seq.substr(pos, 1);
+                            ret += " ";
+                        } else {
+                            ret += seq.substr(pos, 1);
+                        }
+                        pos++;
+                    }
+                    ret += string(end - length() - 1, ' ');
                 }
             }
         } else {
@@ -70,6 +82,17 @@ namespace SeqView {
                 int pos = beg;
                 for(int i = 0; i < len; i++) {
                     if((pos - frame - 1) % 3 == 0) {
+                        ret += seq.substr(pos, 1);
+                        ret += " ";
+                    } else {
+                        ret += seq.substr(pos, 1);
+                    }
+                    pos++;
+                }
+            } else if(mode == TEN) {
+                int pos = beg;
+                for(int i = 0; i < len; i++) {
+                    if((pos + 1) % 10 == 0) {
                         ret += seq.substr(pos, 1);
                         ret += " ";
                     } else {
