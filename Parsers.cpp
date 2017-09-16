@@ -8,10 +8,13 @@ namespace SeqView {
         if(!input_stream->good()) {
             throw("File stream is in a bad state");
         }
-        //string format = guessFormat(input_stream);
-        //if(format == "fasta") {
-            //parseFasta(filename, input_stream); -> Modified to not open or close the file
-        //}
+        string format = guessFormat(input_stream);
+        if(format == "fasta") {
+            parseFasta(filename, data);
+        } else {
+            input.close();
+            throw("Unrecognized format");
+        }
         input.close();
     }
 
@@ -35,8 +38,7 @@ namespace SeqView {
         ifstream input;
         SeqStream input_stream(openSeqFile(filename, input));
 
-        // This causes errors right now:
-        //std::cerr << guessFormat(input_stream) << std::endl;
+        std::cerr << guessFormat(input_stream) << std::endl;
 
         data.filename = filename;
 
@@ -109,12 +111,12 @@ namespace SeqView {
     // creates, opens, and closes the istream*, and also runs the
     // parsing function.
 
-    string guessFormat(std::istream * is) {
+    string guessFormat(SeqStream s) {
         string format = "";
-        return guessFormat(is, format);
+        return guessFormat(s, format);
     }
 
-    string guessFormat(std::istream * is, string &format) {
+    string guessFormat(SeqStream s, string &format) {
 
         // If the format is already determined, skip guessing
         if(format.size() > 0) {
@@ -122,22 +124,26 @@ namespace SeqView {
         }
 
         // Make sure the stream is okay before reading
-        if(!is->good()) {
+        if(!s.good()) {
             std::cerr << "bad state!!!" << std::endl;
             throw("File stream is in a bad state");
         }
-        std::streampos sp = is->tellg();
 
-        // Look at the first 199 characters of the file to determine
+        // Look at the first 150 characters of the file to determine
         // format
-        char buffer[200];
-        // I want to just read 200 chars without checking for a delim;
-        // seems unlikely that XXX will be in a sequence file
-        is->getline(buffer, 199, '\n');
-        int nread = std::char_traits<char>::length(buffer);
-        char c;
+        char buffer[150];
         unsigned k = 0;
-        while(k < 199 && k < nread) {
+        unsigned nread = 0;
+        char c;
+        while(k < 150 && s.good() && !s.eof()) {
+            s.get(c);
+            buffer[k] = c;
+            k++;
+            nread++;
+        }
+
+        k = 0;
+        while(k < 150 && k < nread) {
             c = buffer[k];
             k++;
             if(c == '\n' || c == '\r' || c == ' ' || c == '\t')
@@ -150,7 +156,7 @@ namespace SeqView {
                 format = "fastq";
                 break;
             }
-            if(toupper(c) == 'L' && k < 199-4 &&
+            if(toupper(c) == 'L' && k < nread-4 &&
                     toupper(buffer[k+1]) == 'O' &&
                     toupper(buffer[k+2]) == 'C' &&
                     toupper(buffer[k+3]) == 'U' &&
@@ -158,7 +164,7 @@ namespace SeqView {
                     format = "genbank";
                     break;
             }
-            if(toupper(c) == 'N' && k < 199-4 &&
+            if(toupper(c) == 'N' && k < nread-4 &&
                     toupper(buffer[k+1]) == 'E' &&
                     toupper(buffer[k+2]) == 'X' &&
                     toupper(buffer[k+3]) == 'U' &&
@@ -182,26 +188,7 @@ namespace SeqView {
 
         } // End format guessing loop
 
-        // Put all the characters back on the stream for the parsing
-        // function
-        // This doesn't work because you often can't put more than
-        // one character back.
-        // Need a class that wrap ifstream with get, good, and eof methods
-        // but will take characters from a buffer until it runs out and
-        // then from the ifstream. It would read 200 characters into the
-        // buffer when initialized.
-        /*
-        for(int i = nread-1; i > -1; i--) {
-            is->putback(buffer[i]);
-            if(is->fail()) {
-                std::cerr << "problem resetting!!!" << std::endl;
-                throw("Problem resetting file stream");
-            }
-        } // End put back
-        */
-        // This works for regular files, but not for stdin
-        is->seekg(sp);
-        if(!is->good()) {
+        if(!s.start_over()) {
             std::cerr << "problem resetting!!!" << std::endl;
             throw("Problem resetting file stream");
         }

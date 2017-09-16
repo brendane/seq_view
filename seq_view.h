@@ -193,10 +193,26 @@ namespace SeqView {
      *
      */
 
+    class SeqStream {
+        private:
+            istream * is;
+            char buffer[200];
+            unsigned ipos;
+            unsigned opos;
+
+        public:
+            SeqStream(istream * is_);
+            bool good();
+            bool eof();
+            void get(char &ch);
+            bool start_over();
+    };
+
     typedef void (*ParserFunction)(string filename, SeqSet &data);
+    void parseSeqs(string filename, SeqSet &data);
     void parseFasta(string filename, SeqSet &data);
-    string guessFormat(std::istream * is, string &format);
-    string guessFormat(std::istream * is);
+    string guessFormat(SeqStream s, string &format);
+    string guessFormat(SeqStream s);
     std::istream * openSeqFile(string filename, ifstream &input);
 
     /*
@@ -253,7 +269,7 @@ namespace SeqView {
 
             SeqWindow(int upperleftX, int upperleftY, 
                     int _width, int _height, string filename,
-                    ParserFunction parser=&parseFasta);
+                    ParserFunction parser=&parseSeqs);
 
             ~SeqWindow();
 
@@ -312,21 +328,6 @@ namespace SeqView {
             bool handle_command(Command command);
 
             void handle_special_command();
-    };
-
-    class SeqStream {
-        private:
-            istream * is;
-            char buffer[200];
-            unsigned ipos;
-            unsigned opos;
-
-        public:
-            SeqStream(istream * is_);
-            bool good();
-            bool eof();
-            void get(char &ch);
-            bool start_over();
     };
 
 }
