@@ -215,6 +215,8 @@ namespace SeqView {
                 clear_line(height - 1);
                 add_window(tokens[1]);
             } else if(!tokens[0].compare("mode") && tokens.size() == 2) {
+                if(!tokens[1].compare("ten"))
+                    handle_command(Command(DISPLAYMODE, 3));
                 if(!tokens[1].compare("codon"))
                     handle_command(Command(DISPLAYMODE, 2));
                 if(!tokens[1].compare("normal"))

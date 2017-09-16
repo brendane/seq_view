@@ -1,4 +1,4 @@
-#seq_view
+# seq_view
 
 Program to display molecular sequence files using ncurses and a vim-like
 user interface. Meant to be an intermediate step between the Unix
@@ -14,7 +14,7 @@ A single fasta file in codon mode:
 Two files displayed at once, showing comparison mode:
 ![](two-files.png)
 
-##Installation
+## Installation
 
 ==================================================
 
@@ -33,7 +33,7 @@ case compile with:
 g++ -o seq_view *.cpp -I"." -lcurses
 
 
-##Use
+## Use
 
 ==================================================
 
@@ -47,9 +47,9 @@ commands can be used to move through the data and control the
 appearance. To cancel any command type ESC. To quit use Ctrl-C or type
 'q'.
 
-####KEY                 ACTION
+#### KEY                 ACTION
 
-#####General
+##### General
 
 q                   Close current window. When last window is closed,
                     the program quits.
@@ -60,7 +60,7 @@ W                   Cycle through windows backwards
 [number]w           Move to window *number* (1 based)
 
 
-#####Scrolling
+##### Scrolling
 
 All scrolling commands can be proceeded by a number that is multiplied
 by the current base scroll amount to get the number of positions to
@@ -87,7 +87,7 @@ g                   Move to the beginning
 [number]G           Move to position [number]
 
 
-#####Appearance
+##### Appearance
 
 c                   Turn on and off comparison highlighting. When
                     comparison highlighting is on, sites that are all
@@ -104,7 +104,7 @@ c                   Turn on and off comparison highlighting. When
                     1, 2, or 3.
 
 
-#####Special commands
+##### Special commands
 
 These commands are entered by typing ";". There are just a few of them
 right now:
@@ -114,7 +114,7 @@ right now:
 "mode":             Type ";mode MODE" to switch display mode
                     ("normal" or "codon" right now).
 
-"bold":             Toggle bolded sequence display.
+"bold":             Toggle bolded sequence display. (Not working yet.)
 
 
 ### Comparison modes
@@ -126,4 +126,5 @@ TODO...
 
 * *normal*    Displays sequences with one column per base
 * *codon*     Puts a space between every codon (set the frame
-            with 'f' key command).
+              with 'f' key command).
+  *ten*       Puts a space every 10 bases
