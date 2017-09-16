@@ -112,7 +112,7 @@ right now:
 "open":             Type ";open FILENAME" to open FILENAME.
 
 "mode":             Type ";mode MODE" to switch display mode
-                    ("normal" or "codon" right now).
+                    ("normal", "codon", or "ten" right now).
 
 "bold":             Toggle bolded sequence display. (Not working yet.)
 
@@ -127,4 +127,4 @@ TODO...
 * *normal*    Displays sequences with one column per base
 * *codon*     Puts a space between every codon (set the frame
               with 'f' key command).
-  *ten*       Puts a space every 10 bases
+* *ten*       Puts a space every 10 bases
