@@ -22,10 +22,12 @@ namespace SeqView {
 
         // need a map/tree that matches commands to characters
         while(TRUE) {
-            char ch = getch();
+            int chi = getch();
+            char ch = (char)chi;
+            //char ch = getch();
 
             // ESC key clears the buffers
-            if(ch == 27) {
+            if(chi == 27) {
                 param = 1;
                 param_buffer = "";
                 command_buffer = "";
@@ -36,7 +38,7 @@ namespace SeqView {
 
             // if a non-number was pushed, convert the 
             // param_buffer to int and look for the command
-            if(ch > 57 || ch < 48) {
+            if(chi > 57 || chi < 48) {
                 on_command = true;
                 on_param = false;
                 if(param_buffer.length())
@@ -49,57 +51,75 @@ namespace SeqView {
             }
 
             // if we are looking for a command
+            // check for special keyboard keys first - because those
+            // often have numbers > than what char can hold
             if(on_command) {
-                command_buffer += ch;
-                if(!command_buffer.compare("q"))
-                    return Command(QUIT, param);
-                if(!command_buffer.compare("s"))
-                    return Command(SCROLLMODE, param);
-                if(!command_buffer.compare("j"))
+                if(chi == KEY_DOWN)
                     return Command(SCROLLDOWN, param);
-                if(!command_buffer.compare("J"))
-                    return Command(SCROLLBOTTOM, param);
-                if(!command_buffer.compare("k"))
+                if(chi == KEY_UP)
                     return Command(SCROLLUP, param);
-                if(!command_buffer.compare("K"))
-                    return Command(SCROLLTOP, param);
-                if(!command_buffer.compare("h"))
+                if(chi == KEY_LEFT)
                     return Command(SCROLLLEFT, param);
-                if(!command_buffer.compare("l"))
+                if(chi == KEY_RIGHT)
                     return Command(SCROLLRIGHT, param);
-                if(!command_buffer.compare("H"))
-                    return Command(SHOWHELP, param);
-                if(!command_buffer.compare("g"))
+                if(chi == KEY_HOME)
                     return Command(GOTOBEGIN, param);
-                if(!command_buffer.compare("w")) {
-                    if(param_buffer.length() == 0) {
-                        param = 0;
+                if(chi == KEY_END)
+                    return Command(GOTOEND, param);
+
+                // if it makes sense to treat the command as a letter
+                if(chi < 256) {
+                    command_buffer += ch;
+                    if(!command_buffer.compare("q"))
+                        return Command(QUIT, param);
+                    if(!command_buffer.compare("s"))
+                        return Command(SCROLLMODE, param);
+                    if(!command_buffer.compare("j"))
+                        return Command(SCROLLDOWN, param);
+                    if(!command_buffer.compare("J"))
+                        return Command(SCROLLBOTTOM, param);
+                    if(!command_buffer.compare("k"))
+                        return Command(SCROLLUP, param);
+                    if(!command_buffer.compare("K"))
+                        return Command(SCROLLTOP, param);
+                    if(!command_buffer.compare("h"))
+                        return Command(SCROLLLEFT, param);
+                    if(!command_buffer.compare("l"))
+                        return Command(SCROLLRIGHT, param);
+                    if(!command_buffer.compare("H"))
+                        return Command(SHOWHELP, param);
+                    if(!command_buffer.compare("g"))
+                        return Command(GOTOBEGIN, param);
+                    if(!command_buffer.compare("w")) {
+                        if(param_buffer.length() == 0) {
+                            param = 0;
+                        }
+                        return Command(CHANGEFOCUS, param);
                     }
-                    return Command(CHANGEFOCUS, param);
-                }
-                if(!command_buffer.compare("W")) {
-                    if(param_buffer.length() == 0) {
-                        param = 0;
+                    if(!command_buffer.compare("W")) {
+                        if(param_buffer.length() == 0) {
+                            param = 0;
+                        }
+                        return Command(CHANGEFOCUSREV, param);
                     }
-                    return Command(CHANGEFOCUSREV, param);
-                }
-                if(!command_buffer.compare("G")) {
-                    if(param_buffer.length()) {
-                        return Command(GOTO, param);
-                    } else {
-                        return Command(GOTOEND, param);
+                    if(!command_buffer.compare("G")) {
+                        if(param_buffer.length()) {
+                            return Command(GOTO, param);
+                        } else {
+                            return Command(GOTOEND, param);
+                        }
                     }
+                    if(!command_buffer.compare("d"))
+                        return Command(DISPLAYMODE, param);
+                    if(!command_buffer.compare("f"))
+                        return Command(SETFRAME, param);
+                    if(!command_buffer.compare("n"))
+                        return Command(NAMEWIDTH, param);
+                    if(!command_buffer.compare(";"))
+                        return Command(SPECIAL, param);
+                    if(!command_buffer.compare("c"))
+                        return Command(COMPARE, param);
                 }
-                if(!command_buffer.compare("d"))
-                    return Command(DISPLAYMODE, param);
-                if(!command_buffer.compare("f"))
-                    return Command(SETFRAME, param);
-                if(!command_buffer.compare("n"))
-                    return Command(NAMEWIDTH, param);
-                if(!command_buffer.compare(";"))
-                    return Command(SPECIAL, param);
-                if(!command_buffer.compare("c"))
-                    return Command(COMPARE, param);
 
                 // if no matches, clear the buffers
                 param_buffer = "";

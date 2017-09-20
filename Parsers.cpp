@@ -38,8 +38,6 @@ namespace SeqView {
         ifstream input;
         SeqStream input_stream(openSeqFile(filename, input));
 
-        std::cerr << guessFormat(input_stream) << std::endl;
-
         data.filename = filename;
 
         char ch;

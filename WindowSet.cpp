@@ -138,7 +138,6 @@ namespace SeqView {
     void WindowSet::handle_special_command() {
         /* 
          * TODO:
-         *  1) Implement arrow keys
          *  2) Implement a simple command history
          *  3) Allow commands to stretch over more than one line:
          *     - keep track of line length relative to window width
@@ -146,7 +145,6 @@ namespace SeqView {
          *     - when command is run, remember to redisplay the bottom
          *       window if the command took up multiple lines.
          *  4) DELETE KEY
-         *  5) HOME, END keys
          *  6) Tab file completion
          */
         for(int i = 0; i <= width; i++)
