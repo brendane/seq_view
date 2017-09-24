@@ -210,7 +210,8 @@ namespace SeqView {
 
     typedef void (*ParserFunction)(string filename, SeqSet &data);
     void parseSeqs(string filename, SeqSet &data);
-    void parseFasta(string filename, SeqSet &data);
+    void parseFasta(SeqStream input_stream, string filename, SeqSet &data);
+    void parseFastq(SeqStream input_stream, string filename, SeqSet &data);
     string guessFormat(SeqStream s, string &format);
     string guessFormat(SeqStream s);
     std::istream * openSeqFile(string filename, ifstream &input);

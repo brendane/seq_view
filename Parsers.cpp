@@ -1,16 +1,30 @@
 #include<seq_view.h>
 
+#include<unistd.h>
+
 namespace SeqView {
 
     void parseSeqs(string filename, SeqSet &data) {
         ifstream input;
-        std::istream * input_stream = openSeqFile(filename, input);
-        if(!input_stream->good()) {
+        SeqStream input_stream(openSeqFile(filename, input));
+        if(!input_stream.good()) {
             throw("File stream is in a bad state");
         }
         string format = guessFormat(input_stream);
         if(format == "fasta") {
-            parseFasta(filename, data);
+            try {
+                parseFasta(input_stream, filename, data);
+            } catch(...) {
+                input.close();
+                throw;
+            }
+        } else if(format == "fastq") {
+            try {
+                parseFastq(input_stream, filename, data);
+            } catch(...) {
+                input.close();
+                throw;
+            }
         } else {
             input.close();
             throw("Unrecognized format");
@@ -33,10 +47,8 @@ namespace SeqView {
         return input_stream;
     }
 
-    void parseFasta(string filename, SeqSet &data) {
 
-        ifstream input;
-        SeqStream input_stream(openSeqFile(filename, input));
+    void parseFasta(SeqStream input_stream, string filename, SeqSet &data) {
 
         data.filename = filename;
 
@@ -48,7 +60,6 @@ namespace SeqView {
         // Enclose all of this in a while loop that goes to EOF:
         input_stream.get(ch);
         if(ch != '>') {
-            input.close();
             throw("Not in FASTA format");
         }
 
@@ -61,7 +72,6 @@ namespace SeqView {
             nm = "";
             while (true && !inseq) {
                 if(!input_stream.good()) {
-                    input.close();
                     throw("Problem reading file");
                 }
                 input_stream.get(ch);
@@ -102,7 +112,75 @@ namespace SeqView {
             data.append(rec);
             size_guess = rec.getSeq().size();
         }
-        input.close();
+    }
+
+
+
+
+    void parseFastq(SeqStream input_stream, string filename, SeqSet &data) {
+
+        data.filename = filename;
+        char ch;
+        string temp = "";
+        string nm = "";
+        unsigned size_guess = 150; // Seems like it might speed things up
+        unsigned line_num = 0;
+        bool linebreak = false;
+        bool name = false;
+        while(!input_stream.eof()) {
+            // Check if stream is okay and read a character
+            if(!input_stream.good()) {
+                throw("Problem reading file");
+            }
+            input_stream.get(ch);
+
+            // Check for linebreaks. Treat multiple linebreak characters
+            // as one linebreak. Also, count the number of lines, and when
+            // four lines have been reach, construct a SeqRecord and reset.
+            if(ch == '\n' || ch == '\r') {
+                if(!linebreak) {
+                    line_num += 1;
+                    if(line_num == 4) {
+                        line_num = 0;
+                        SeqRecord rec;
+                        rec.setName(nm);
+                        rec.append(temp);
+                        data.append(rec);
+                        size_guess = rec.getSeq().size();
+                        nm = "";
+                        temp = "";
+                        temp.reserve(size_guess);
+                        name = false;
+                    }
+                }
+                linebreak = true;
+                continue;
+            }
+
+            // If this far, not a linebreak
+            linebreak = false;
+
+            // For each line of the fastq file
+            if(line_num == 0) {
+                // Name
+                if(!name and ch != '@') {
+                    throw("Not in fastq format");
+                }
+                if(name) {
+                    nm += ch;
+                }
+                name = true;
+            } else if(line_num == 1) {
+                // Sequence
+                temp += ch;
+            } else if(line_num == 2) {
+                // Plus line - Ignore
+                continue;
+            } else if(line_num == 3) {
+                // Quality scores - ignore
+                continue;
+            }
+        }
     }
 
     // This function should be placed within another function that
@@ -159,16 +237,16 @@ namespace SeqView {
                     toupper(buffer[k+2]) == 'C' &&
                     toupper(buffer[k+3]) == 'U' &&
                     toupper(buffer[k+4]) == 'S') {
-                    format = "genbank";
-                    break;
+                format = "genbank";
+                break;
             }
             if(toupper(c) == 'N' && k < nread-4 &&
                     toupper(buffer[k+1]) == 'E' &&
                     toupper(buffer[k+2]) == 'X' &&
                     toupper(buffer[k+3]) == 'U' &&
                     toupper(buffer[k+4]) == 'S') {
-                    format = "nexus";
-                    break;
+                format = "nexus";
+                break;
             }
             // Other common formats:
             //  - phylip: could be recognized by having two numbers at
