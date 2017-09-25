@@ -8,7 +8,7 @@ namespace SeqView {
         SCROLLMODE, COMPAREMODE, GOTO, GOTOEND,
         COMPARETOGGLE, GOTOBEGIN, SCROLLTOP,
         SCROLLBOTTOM, NAMEWIDTH, DISPLAYMODE, SETFRAME,
-        COMPARE};
+        COMPARE, RESIZE};
 
     Command getCommand() {
         // Get the command followed by the parameters
@@ -22,12 +22,11 @@ namespace SeqView {
 
         // need a map/tree that matches commands to characters
         while(TRUE) {
-            int chi = getch();
-            char ch = (char)chi;
+            wchar_t ch = getch();
             //char ch = getch();
 
             // ESC key clears the buffers
-            if(chi == 27) {
+            if(ch == 27) {
                 param = 1;
                 param_buffer = "";
                 command_buffer = "";
@@ -38,7 +37,7 @@ namespace SeqView {
 
             // if a non-number was pushed, convert the 
             // param_buffer to int and look for the command
-            if(chi > 57 || chi < 48) {
+            if(ch > 57 || ch < 48) {
                 on_command = true;
                 on_param = false;
                 if(param_buffer.length())
@@ -54,21 +53,24 @@ namespace SeqView {
             // check for special keyboard keys first - because those
             // often have numbers > than what char can hold
             if(on_command) {
-                if(chi == KEY_DOWN)
+                if(ch == KEY_DOWN) {
                     return Command(SCROLLDOWN, param);
-                if(chi == KEY_UP)
+                } else if(ch == KEY_UP) {
                     return Command(SCROLLUP, param);
-                if(chi == KEY_LEFT)
+                } else if(ch == KEY_LEFT) {
                     return Command(SCROLLLEFT, param);
-                if(chi == KEY_RIGHT)
+                } else if(ch == KEY_RIGHT) {
                     return Command(SCROLLRIGHT, param);
-                if(chi == KEY_HOME)
+                } else if(ch == KEY_HOME) {
                     return Command(GOTOBEGIN, param);
-                if(chi == KEY_END)
+                } else if(ch == KEY_END) {
                     return Command(GOTOEND, param);
+                } else if(ch == KEY_RESIZE) {
+                    return Command(RESIZE, param);
+                }
 
                 // if it makes sense to treat the command as a letter
-                if(chi < 256) {
+                if(ch < 256) {
                     command_buffer += ch;
                     if(!command_buffer.compare("q"))
                         return Command(QUIT, param);

@@ -81,7 +81,8 @@ namespace SeqView {
         COMPARETOGGLE, SCROLLMODE, COMPAREMODE, GOTO,
         GOTOEND, GOTOBEGIN, SCROLLTOP, SCROLLBOTTOM,
         SHOWHELP, CHANGEFOCUS, CHANGEFOCUSREV, NAMEWIDTH, 
-        SPECIAL, DISPLAYMODE, SETFRAME, COMPARE, TOGGLEBOLD};
+        SPECIAL, DISPLAYMODE, SETFRAME, COMPARE, TOGGLEBOLD,
+        RESIZE};
     typedef std::pair<Com, int> Command;
     extern Com ssc[];
     extern set<int> seqSetCommands;

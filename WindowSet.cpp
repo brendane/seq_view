@@ -154,7 +154,7 @@ namespace SeqView {
         int cursor = 0; // where to insert the new character
         int line = height - 1; // line to print commands - to deal with
                                // long commands
-        char ch;
+        wchar_t ch;
         while(true) {
             ch = getch();
 
