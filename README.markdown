@@ -5,7 +5,7 @@ user interface. Meant to be an intermediate step between the Unix
 command line tools and graphical sequence editing programs. I find it
 useful when I'm logged into a server remotely and I want to look at some
 fasta files. It's a bit like samtools tview, but for sequence files
-(currently just FASTA format) instead of read alignments.
+(currently just FASTA and FASTQ format) instead of read alignments.
 
 ### Screenshot:
 A single fasta file in codon mode:
@@ -37,10 +37,10 @@ g++ -o seq_view *.cpp -I"." -lcurses
 
 ==================================================
 
-seq_view FASTA_FILE [FILE, FILE, ...]
+seq_view FILE [FILE, FILE, ...]
 
-At present, seq_view can only read FASTA files (more file formats may be
-added in the future). Use "-" to read from stdin.
+At present, seq_view can only read FASTA and FASTQ files (more file
+formats may be added in the future). Use "-" to read from stdin.
 
 Once the file is open, a set of keyboard commands, similar to vim's
 commands can be used to move through the data and control the
@@ -51,13 +51,13 @@ appearance. To cancel any command type ESC. To quit use Ctrl-C or type
 
 ##### General
 
-q                   Close current window. When last window is closed,
-                    the program quits.
+**q**                   Close current window. When last window is closed,
+                        the program quits.
 
-w                   Cycle through windows
-W                   Cycle through windows backwards
+**w**                   Cycle through windows
+**W**                   Cycle through windows backwards
 
-[number]w           Move to window *number* (1 based)
+**[number]w**           Move to window *number* (1 based)
 
 
 ##### Scrolling
@@ -66,48 +66,49 @@ All scrolling commands can be proceeded by a number that is multiplied
 by the current base scroll amount to get the number of positions to
 move.
 
-[number]s           Set base scroll amount to 10^[number]
+**[number]s**           Set base scroll amount to 10^[number]
 
-[number]h           Move [number] units to the left
+**[number]h**           Move [number] units to the left
 
-[number]l           Move [number] units to the right
+**[number]l**           Move [number] units to the right
 
-[number]j           Move [number] units down
+**[number]j**           Move [number] units down
 
-[number]k           Move [number] units up
+**[number]k**           Move [number] units up
 
-K                   Move to the top
+**K**                   Move to the top
 
-J                   Move to the bottom
+**J**                   Move to the bottom
 
-G                   Move to the end
+**G**                   Move to the end
 
-g                   Move to the beginning
+**g**                   Move to the beginning
 
-[number]G           Move to position [number]
+**[number]G**           Move to position [number]
 
 
 ##### Appearance
 
-c                   Turn on and off comparison highlighting. When
-                    comparison highlighting is on, sites that are all
-                    the same are highlighted. See section on comparison
-                    below.
+**c**                   Turn on and off comparison highlighting. When
+                        comparison highlighting is on, sites that are all
+                        the same are highlighted. See section on comparison
+                        below.
 
-[number]d           Display mode. Right now has 1 for normal and 2 for
-                    codon. See display mode section below.
+**[number]d**           Display mode. Right now has 1 for normal, 2 for
+                        codon, and three for ten. See display mode section
+                        below.
 
-[number]n           Adjust the number of characters of the names
-                    displayed to be [number].
+**[number]n**           Adjust the number of characters of the names
+                        displayed to be [number].
 
-[number]f           Adjust the frame for codon display mode. Should be
-                    1, 2, or 3.
+**[number]f**           Adjust the frame for codon display mode. Should be
+                        1, 2, or 3.
 
 
 ##### Special commands
 
-These commands are entered by typing ";". There are just a few of them
-right now:
+These commands are entered by typing ";", similar to how vim commands
+are entered by typing ":". There are just a few of them right now:
 
 "open":             Type ";open FILENAME" to open FILENAME.
 
