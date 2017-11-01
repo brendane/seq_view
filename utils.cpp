@@ -23,8 +23,6 @@ namespace SeqView {
     }
 
     void initDisplay() {
-        //initscr();
-
         // Use in place of initscr so that we can read files from stdin.
         // Very much obliged to https://gist.github.com/dreiss/226539
         // (David Reiss).
@@ -40,7 +38,7 @@ namespace SeqView {
             perror("fopen(/dev/tty)");
             exit(EXIT_FAILURE);
         }
-        SCREEN* main_screen = newterm(term_type, stdout, term_in);
+        SCREEN* main_screen = newterm((NCURSES_CONST char*) term_type, stdout, term_in);
         set_term(main_screen);
         // End replacement for initscr();
 
