@@ -178,8 +178,6 @@ namespace SeqView {
                 slice(int64_t beg, int64_t end, int64_t first, int64_t last,
                       DisplayMode mode, bool compare);
 
-            char * column(int64_t pos);
-
             void append(SeqRecord rec);
     };
 

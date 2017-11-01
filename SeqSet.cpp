@@ -70,13 +70,6 @@ namespace SeqView {
             return std::make_pair(ret, comps);
         }
 
-    char * SeqSet::column(int64_t pos) {
-        char ret[nseqs];
-        for(int64_t i = 0; i < nseqs; i++) {
-            ret[i] = (seqs[i].getSeq(i, i, NORMAL)).c_str()[0];
-        }
-    }
-
     void SeqSet::append(SeqRecord rec) {
         seqs.push_back(rec);
         if(rec.length() > maxlen) {
