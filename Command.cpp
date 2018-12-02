@@ -67,6 +67,10 @@ namespace SeqView {
                     return Command(GOTOEND, param);
                 } else if(ch == KEY_RESIZE) {
                     return Command(RESIZE, param);
+                } else if (ch == KEY_SLEFT) {
+                    return Command(NAMEWIDTH, -1);
+                } else if (ch == KEY_SRIGHT) {
+                    return Command(NAMEWIDTH, 0);
                 }
 
                 // if it makes sense to treat the command as a letter

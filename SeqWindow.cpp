@@ -84,6 +84,8 @@ namespace SeqView {
         wattroff(window, COLOR_PAIR(7));
     }
 
+    // TODO: Add code for different ways of comparing - just need to
+    // pass the comparison mode to SeqSet::slice.
     void SeqWindow::_display_seqs() {
         // This function is more tricky - will require some added
         // arguments for formatting eventually.
@@ -136,12 +138,14 @@ namespace SeqView {
     }
 
 
+    // TODO: Comparison mode, not just TRUE or FALSE
     SeqWindow::SeqWindow() {
         modified = true;
         compare = false;
         bolded = false;
     }
 
+    // TODO: Comparison mode, not just true or false
     SeqWindow::SeqWindow(int upperleftX, int upperleftY, 
             int _width, int _height, SeqSet &sq) {
         window = newwin(_height, _width, upperleftY, upperleftX);
@@ -162,6 +166,7 @@ namespace SeqView {
         display();
     }
 
+    // TODO: Comparison mode, not just true or false
     SeqWindow::SeqWindow(int upperleftX, int upperleftY, 
             int _width, int _height, string filename,
             ParserFunction parser) {
@@ -221,6 +226,8 @@ namespace SeqView {
     }
 
     // Deal with commands that change SeqSet params
+    //
+    // TODO: handle comparison modes by checking the "param"
     void SeqWindow::handle_command(Command command) {
         Com com_name = command.first;
         int param = command.second;
@@ -274,7 +281,13 @@ namespace SeqView {
         } else if(com_name == SCROLLMODE) {
             set_scroll_mode(param);
         } else if(com_name == NAMEWIDTH) {
-            change_name_width(param);
+            if(param > 0) {
+                change_name_width(param);
+            } else if(param == -1) {
+                change_name_width(names_width-1);
+            } else if(param == 0) {
+                change_name_width(names_width+1);
+            }
         } else if(com_name == DISPLAYMODE) {
             if(param == 1) {
                 display_mode = NORMAL;
