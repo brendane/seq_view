@@ -269,10 +269,11 @@ namespace SeqView {
         } else if(com_name == GOTOEND) {
             _scroll(seqs.length() - 1, first_seq);
         } else if(com_name == GOTO) {
-            // Do I need to add something here for display_mode == TEN ?
             newpos = param - 1 - (width - names_width) / 2;
             if(display_mode == CODON)
                 newpos += (width - names_width) / 6;
+            if(display_mode == TEN)
+                newpos += (width - names_width) / 20;
             if(newpos < 0)
                 newpos = 0;
             if(newpos > seqs.length() - 1)
