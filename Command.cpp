@@ -8,17 +8,21 @@ namespace SeqView {
         SCROLLMODE, COMPAREMODE, GOTO, GOTOEND,
         COMPARETOGGLE, GOTOBEGIN, SCROLLTOP,
         SCROLLBOTTOM, NAMEWIDTH, DISPLAYMODE, SETFRAME,
-        COMPARE, RESIZE};
+        COMPARE};
 
     Command getCommand() {
         // Get the command followed by the parameters
 
         int param = 1;
+        int h, w, h_, w_;
         string param_buffer = "";
         string command_buffer = "";
 
         bool on_param = true;
         bool on_command = false;
+
+        getmaxyx(stdscr, h, w);
+        h_ = h; w_ = w;
 
         // need a map/tree that matches commands to characters
         while(TRUE) {
@@ -125,6 +129,13 @@ namespace SeqView {
                         return Command(SPECIAL, param);
                     if(!command_buffer.compare("c"))
                         return Command(COMPARE, param);
+                }
+
+                // if window size has changed, but no caught by KEY_RESIZE
+                getmaxyx(stdscr, h, w);
+                if(h != h_ || w != w_) {
+                    h_ = h; w_ = w;
+                    return Command(RESIZE, param);
                 }
 
                 // if no matches, clear the buffers

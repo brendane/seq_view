@@ -307,8 +307,6 @@ namespace SeqView {
         } else if(com_name == TOGGLEBOLD) {
             bolded = !bolded;
             modified = true;
-        } else if(com_name == RESIZE) {
-            modified = true;
         }
     }
 

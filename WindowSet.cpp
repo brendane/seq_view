@@ -127,6 +127,9 @@ namespace SeqView {
                 change_focus(command.second - 1);
                 return true;
             }
+            if(command.first == RESIZE) {
+                update();
+            }
             if(command.first == SPECIAL) {
                 handle_special_command();
                 return true;
