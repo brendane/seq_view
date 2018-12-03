@@ -30,7 +30,7 @@ namespace SeqView {
         std::vector<string> names = seqs.nameSlice(first_seq, last_seq);
         for(int i = 0; i < num_seqs_displayed - 1; i++) {
             mvwprintw(window, i+2, 0, string(names_width + 1, ' ').c_str());
-            if(names_width > names[i].length())
+            if((unsigned)names_width > names[i].length())
                 mvwprintw(window, i+2, 0, names[i].c_str());
             else
                 mvwprintw(window, i + 2, 0,
@@ -100,7 +100,7 @@ namespace SeqView {
         if(bolded)
             wattron(window, A_BOLD);
         for(int i = 0; i < num_seqs_displayed - 1; i++) {
-            for(int j = 0; j < sequences[i].length(); j++) {
+            for(unsigned j = 0; j < sequences[i].length(); j++) {
                 ch = sequences[i][j];
                 if(compare != NOCOMPARE && comps[j] && (i + first_seq) < seqs.numseqs() && ch != ' ')
                     wattron(window, A_REVERSE);

@@ -11,7 +11,7 @@ namespace SeqView {
         std::vector<int> newheights;
         int used_height = 0;
         int h = (int) ((height - 1) / (double)windows.size());
-        int win = 0;
+        unsigned win = 0;
         int adj = 0;
         while(win < windows.size()) {
             if(height - used_height < h)
@@ -53,7 +53,7 @@ namespace SeqView {
         update_size();
         if(width != xtemp || height != ytemp)
             adjust_to_fill_evenly();
-        for(int i = 0; i < windows.size(); i++) {
+        for(unsigned i = 0; i < windows.size(); i++) {
             windows[i] -> display();
         }
         refresh();
@@ -75,7 +75,7 @@ namespace SeqView {
     }
 
     void WindowSet::change_focus(int newfocus) {
-        if(newfocus > -1 && newfocus < windows.size()) {
+        if(newfocus > -1 && newfocus < (int)windows.size()) {
             windows[focal_window] -> set_focus(false);
             focal_window = newfocus;
             windows[focal_window] -> set_focus(true);
@@ -114,7 +114,7 @@ namespace SeqView {
             if(command.first == CHANGEFOCUS) {
                 if(command.second == 0) {
                     command.second = focal_window + 2; // Add 2 b/c command is 1 based, but focal_window is 0 based
-                    if(command.second > windows.size())
+                    if(command.second > (int)windows.size())
                         command.second = 1;
                 }
                 change_focus(command.second - 1);
@@ -155,8 +155,8 @@ namespace SeqView {
         mvwprintw(stdscr, height - 1, 0, ";");
         string buffer = "";
         int cursor = 0; // where to insert the new character
-        int line = height - 1; // line to print commands - to deal with
-                               // long commands
+        //int line = height - 1; // line to print commands - to deal with
+        //                      // long commands (not implemented yet)
         wchar_t ch;
         curs_set(1);
         while(true) {
@@ -196,7 +196,7 @@ namespace SeqView {
         if(buffer.size() > 0) {
             std::vector<string> tokens;
             string tok = "";
-            for(int i = 0; i < buffer.size(); i++) {
+            for(unsigned i = 0; i < buffer.size(); i++) {
                 if(buffer[i] == ' ') {
                     tokens.push_back(string(tok));
 

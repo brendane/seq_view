@@ -22,12 +22,11 @@ namespace SeqView {
     std::vector<bool> simple_compare(std::vector<string> s) {
         std::vector <bool> ret;
         ret.reserve(s[0].size());
-        for(int pos = 0; pos < s[0].size(); pos++) {
-            char matches = 15; // bit array to hold matches to A,T,C,G
+        for(unsigned pos = 0; pos < s[0].size(); pos++) {
             bool match = true;
             char ch = toupper(s[0][pos]);
             char test;
-            for(int i = 1; i < s.size(); i++) {
+            for(unsigned i = 1; i < s.size(); i++) {
                 test = toupper(s[i][pos]);
                 if(ch != test) {
                     if(ch == ' ') {
@@ -58,11 +57,11 @@ namespace SeqView {
     std::vector<bool> nuc_compare(std::vector<string> s) {
         std::vector <bool> ret;
         ret.reserve(s[0].size());
-        for(int pos = 0; pos < s[0].size(); pos++) {
+        for(unsigned pos = 0; pos < s[0].size(); pos++) {
             char matches = 15; // bit array to hold matches to A,T,C,G
             bool match = true;
             bool all_spaces = true;
-            for(int i = 0; i < s.size(); i++) {
+            for(unsigned i = 0; i < s.size(); i++) {
                 char ch = toupper(s[i][pos]);
                 if(ch != ' ')
                     all_spaces = false;
@@ -126,13 +125,13 @@ namespace SeqView {
     std::vector<bool> aa_compare(std::vector<string> s) {
         std::vector <bool> ret;
         ret.reserve(s[0].size());
-        for(int pos = 0; pos < s[0].size(); pos++) {
+        for(unsigned pos = 0; pos < s[0].size(); pos++) {
             bool match = true;
             bool all_spaces = true;
             char ch = toupper(s[0][pos]);
             char chh;
-            for(int i = 1; i < s.size(); i++) {
-                char chh = toupper(s[i][pos]);
+            for(unsigned i = 1; i < s.size(); i++) {
+                chh = toupper(s[i][pos]);
                 if(chh != ' ')
                     all_spaces = false;
                 if(chh == ' ' || ch == 'X' || ch == '-') {
@@ -201,11 +200,11 @@ namespace SeqView {
         virtual const std::vector<bool> compare(std::vector<string> s) {
             std::vector <bool> ret;
             ret.reserve(s[0].size());
-            for(int pos = 0; pos < s[0].size(); pos++) {
+            for(unsigned pos = 0; pos < s[0].size(); pos++) {
                 char matches = 15; // bit array to hold matches to A,T,C,G
                 bool match = true;
                 char ch = toupper(s[0][pos]);
-                for(int i = 1; i < s.size(); i++) {
+                for(unsigned i = 1; i < s.size(); i++) {
                     if(ch != toupper(s[i][pos])) {
                         if(ch == ' ') {
                             // Blank should not count as a mismatch
@@ -251,11 +250,11 @@ namespace SeqView {
         virtual const std::vector<bool> compare(std::vector<string> s) {
             std::vector <bool> ret;
             ret.reserve(s[0].size());
-            for(int pos = 0; pos < s[0].size(); pos++) {
+            for(unsigned pos = 0; pos < s[0].size(); pos++) {
                 char matches = 15; // bit array to hold matches to A,T,C,G
                 bool match = true;
                 bool all_spaces = true;
-                for(int i = 0; i < s.size(); i++) {
+                for(unsigned i = 0; i < s.size(); i++) {
                     char ch = toupper(s[i][pos]);
                     if(ch != ' ')
                         all_spaces = false;

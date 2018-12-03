@@ -16,8 +16,7 @@ namespace SeqView {
     }
 
     void clear_line(int line) {
-        int y, x;
-        getmaxyx(stdscr, y, x);
+        int x = getmaxx(stdscr);
         for(int i = 0; i <= x; i++)
             mvwaddch(stdscr, line, i, ' ');
     }

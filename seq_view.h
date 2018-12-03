@@ -314,7 +314,7 @@ namespace SeqView {
         private:
             int width, height; // unlike in SeqWindow, these are really xmax and ymax
             std::vector<SeqWindow*> windows;
-            int focal_window;
+            unsigned focal_window;
             void adjust_to_fill_evenly();
 
         public:

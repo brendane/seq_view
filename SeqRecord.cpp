@@ -106,9 +106,11 @@ namespace SeqView {
         return ret;
     }
 
+    /* Not implemented yet
     std::vector<std::string> SeqRecord::getCodon(int64_t beg, int64_t end,
             int frame) {
     }
+    */
 
     int64_t SeqRecord::length() {
         return seq.length();
