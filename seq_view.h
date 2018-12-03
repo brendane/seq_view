@@ -103,7 +103,16 @@ namespace SeqView {
     std::vector<bool> aa_compare(std::vector<string> s);
     enum ComparisonMode {NOCOMPARE, NUCAMB, NUCAMBNOGAP,
         NUC, NUCNOGAP, TRANSLATED, TRANSLATEDNOGAP,
-        CODONNOGAP, PLAIN, AA, AANOGAP};
+        CDN, CDNNOGAP, PLAIN, AA, AANOGAP};
+    static std::map<std::string, ComparisonMode> CompModeMap = 
+        {
+            {"nocompare", NOCOMPARE}, {"off", NOCOMPARE},
+            {"nucamb", NUCAMB}, {"nucambnogap", NUCAMBNOGAP},
+            {"nuc", NUC}, {"nucnogap", NUCNOGAP},
+            {"translated", TRANSLATED}, {"translatednogap", TRANSLATEDNOGAP},
+            {"codon", CDN}, {"codonnogap", CDNNOGAP},
+            {"plain", PLAIN}, {"aa", AA}, {"aanogap", AANOGAP}
+        };
 
     class SeqRecord {
 
@@ -249,6 +258,7 @@ namespace SeqView {
             bool isfocal;           // whether this is the focal window
             bool modified;          // flag to determine whether to redraw the window
             ComparisonMode compare; // whether comparison is on and what type of comparison
+            ComparisonMode pcomp;   // previous comparison mode
             bool bolded;            // whether the sequences are displayed in bold
 
             void _scroll(int64_t newleft, int64_t newtop);

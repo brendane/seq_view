@@ -128,7 +128,7 @@ namespace SeqView {
                     if(!command_buffer.compare(";"))
                         return Command(SPECIAL, param);
                     if(!command_buffer.compare("c"))
-                        return Command(COMPARE, param);
+                        return Command(COMPARETOGGLE, param);
                 }
 
                 // if window size has changed, but no caught by KEY_RESIZE

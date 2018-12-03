@@ -227,6 +227,10 @@ namespace SeqView {
                 clear_line(height - 1);
             } else if(!tokens[0].compare("bold") && tokens.size() == 2) {
                 handle_command(Command(TOGGLEBOLD, 0));
+            } else if(!tokens[0].compare("compare-mode") &&
+                    tokens.size() == 2 && CompModeMap.count(string(tokens[1]))) {
+                    handle_command(Command(COMPARE, CompModeMap[string(tokens[1])]));
+                    clear_line(height-1);
             } else {
                 clear_line(height - 1);
             }

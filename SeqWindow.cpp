@@ -113,7 +113,7 @@ namespace SeqView {
                 wattron(window, COLOR_PAIR(col));
                 mvwaddch(window, row, names_width + 1 + j, ch);
                 wattroff(window, COLOR_PAIR(col));
-                if(compare && comps[j])
+                if(compare != NOCOMPARE && comps[j])
                     wattroff(window, A_REVERSE);
             }
             row++;
@@ -139,6 +139,7 @@ namespace SeqView {
     SeqWindow::SeqWindow() {
         modified = true;
         compare = NOCOMPARE;
+        pcomp = NUCAMB;
         bolded = false;
     }
 
@@ -159,6 +160,7 @@ namespace SeqView {
         bolded = false;
         modified = true;
         compare = NOCOMPARE;
+        pcomp = NUCAMB;
         display();
     }
 
@@ -181,6 +183,7 @@ namespace SeqView {
         bolded = false;
         modified = true;
         compare = NOCOMPARE;
+        pcomp = NUCAMB;
         display();
     }
 
@@ -296,13 +299,22 @@ namespace SeqView {
         } else if(com_name == SETFRAME) {
             seqs.set_frame(param);
             modified = true;
-        } else if(com_name == COMPARE) {
+        } else if(com_name == COMPARETOGGLE) {
             if(compare == NOCOMPARE) {
-                compare = NUCAMB;
+                compare = pcomp;
             } else {
+                pcomp = compare;
                 compare = NOCOMPARE;
             }
             modified = true;
+        } else if(com_name == COMPARE) {
+            if(param == NOCOMPARE) {
+                pcomp = compare;
+                compare = NOCOMPARE;
+            } else {
+                compare = (ComparisonMode) param;
+                pcomp = (ComparisonMode) param;
+            }
         } else if(com_name == TOGGLEBOLD) {
             bolded = !bolded;
             modified = true;

@@ -72,8 +72,11 @@ namespace SeqView {
             std::vector<std::string> ret = _slice(beg, end, first, last, mode);
             ret.reserve(last - first + 1);
             std::vector<bool> comps;
-            if(compare == NUCAMB)
+            if(compare == NUCAMB) {
                 comps = nuc_compare(_slice(beg, end, 0, numseqs(), mode));
+            } else if(compare == PLAIN) {
+                comps = simple_compare(_slice(beg, end, 0, numseqs(), mode));
+            }
             return std::make_pair(ret, comps);
         }
 
