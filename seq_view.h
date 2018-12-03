@@ -101,6 +101,9 @@ namespace SeqView {
     std::vector<bool> simple_compare(std::vector<string> s);
     std::vector<bool> nuc_compare(std::vector<string> s);
     std::vector<bool> aa_compare(std::vector<string> s);
+    enum ComparisonMode {NOCOMPARE, NUCAMB, NUCAMBNOGAP,
+        NUC, NUCNOGAP, TRANSLATED, TRANSLATEDNOGAP,
+        CODONNOGAP, PLAIN, AA, AANOGAP};
 
     class SeqRecord {
 
@@ -176,7 +179,7 @@ namespace SeqView {
             // The boolean vector is whether there is a match
             std::pair< std::vector<std::string>, std::vector<bool> >
                 slice(int64_t beg, int64_t end, int64_t first, int64_t last,
-                      DisplayMode mode, bool compare);
+                      DisplayMode mode, ComparisonMode compare);
 
             void append(SeqRecord rec);
     };
@@ -245,7 +248,7 @@ namespace SeqView {
             int64_t last_seq;       // bottom sequence
             bool isfocal;           // whether this is the focal window
             bool modified;          // flag to determine whether to redraw the window
-            bool compare;           // whether comparison is on
+            ComparisonMode compare; // whether comparison is on and what type of comparison
             bool bolded;            // whether the sequences are displayed in bold
 
             void _scroll(int64_t newleft, int64_t newtop);

@@ -59,13 +59,20 @@ namespace SeqView {
         return ret;
     }
 
+    // TODO: Implement additional comparison options.
+    // Note that frame is a SeqSet variable - so no need to include
+    // it as a function argument. SeqWindow also has a few places that
+    // need to be changed.
+    //
+    // Also: could be more efficient by using _slice only once and then
+    // slicing on the slice; but that might be complicated.
     std::pair< std::vector<std::string>, std::vector<bool> >
         SeqSet::slice(int64_t beg, int64_t end, int64_t first, int64_t last,
-                DisplayMode mode, bool compare) {
+                DisplayMode mode, ComparisonMode compare) {
             std::vector<std::string> ret = _slice(beg, end, first, last, mode);
             ret.reserve(last - first + 1);
             std::vector<bool> comps;
-            if(compare)
+            if(compare == NUCAMB)
                 comps = nuc_compare(_slice(beg, end, 0, numseqs(), mode));
             return std::make_pair(ret, comps);
         }

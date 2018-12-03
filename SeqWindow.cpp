@@ -84,15 +84,13 @@ namespace SeqView {
         wattroff(window, COLOR_PAIR(7));
     }
 
-    // TODO: Add code for different ways of comparing - just need to
-    // pass the comparison mode to SeqSet::slice.
     void SeqWindow::_display_seqs() {
         // This function is more tricky - will require some added
         // arguments for formatting eventually.
         // Also may require some adjustment to color amino acid
         // sequences properly.
         std::pair< std::vector<string>, std::vector<bool> > 
-            s= seqs.slice(first_pos, last_pos, first_seq, last_seq,
+            s = seqs.slice(first_pos, last_pos, first_seq, last_seq,
                     display_mode, compare);
         std::vector<string> sequences = s.first;
         std::vector<bool> comps = s.second;
@@ -104,7 +102,7 @@ namespace SeqView {
         for(int i = 0; i < num_seqs_displayed - 1; i++) {
             for(int j = 0; j < sequences[i].length(); j++) {
                 ch = sequences[i][j];
-                if(compare && comps[j] && (i + first_seq) < seqs.numseqs() && ch != ' ')
+                if(compare != NOCOMPARE && comps[j] && (i + first_seq) < seqs.numseqs() && ch != ' ')
                     wattron(window, A_REVERSE);
                 ColMapIt cit = dna_colors.find(ch);
                 if(cit != dna_colors.end()) {
@@ -138,14 +136,12 @@ namespace SeqView {
     }
 
 
-    // TODO: Comparison mode, not just TRUE or FALSE
     SeqWindow::SeqWindow() {
         modified = true;
-        compare = false;
+        compare = NOCOMPARE;
         bolded = false;
     }
 
-    // TODO: Comparison mode, not just true or false
     SeqWindow::SeqWindow(int upperleftX, int upperleftY, 
             int _width, int _height, SeqSet &sq) {
         window = newwin(_height, _width, upperleftY, upperleftX);
@@ -162,11 +158,10 @@ namespace SeqView {
         isfocal = true;
         bolded = false;
         modified = true;
-        compare = false;
+        compare = NOCOMPARE;
         display();
     }
 
-    // TODO: Comparison mode, not just true or false
     SeqWindow::SeqWindow(int upperleftX, int upperleftY, 
             int _width, int _height, string filename,
             ParserFunction parser) {
@@ -185,7 +180,7 @@ namespace SeqView {
         _recalculate_num_displayed();
         bolded = false;
         modified = true;
-        compare = false;
+        compare = NOCOMPARE;
         display();
     }
 
@@ -227,7 +222,7 @@ namespace SeqView {
 
     // Deal with commands that change SeqSet params
     //
-    // TODO: handle comparison modes by checking the "param"
+    // TODO: implement comparison mode change option
     void SeqWindow::handle_command(Command command) {
         Com com_name = command.first;
         int param = command.second;
@@ -302,7 +297,11 @@ namespace SeqView {
             seqs.set_frame(param);
             modified = true;
         } else if(com_name == COMPARE) {
-            compare = !compare;
+            if(compare == NOCOMPARE) {
+                compare = NUCAMB;
+            } else {
+                compare = NOCOMPARE;
+            }
             modified = true;
         } else if(com_name == TOGGLEBOLD) {
             bolded = !bolded;
