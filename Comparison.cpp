@@ -74,26 +74,27 @@ namespace SeqView {
                 } else if(ch == 'G') {
                     matches &= ~7;
                 } else if(ch == 'N' || ch == 'X' || ch == '-' || ch == ' ') {
+                    matches &= 15;
                 } else if(ch == 'M') {
-                    matches &= ~5;
+                    matches &= 5;
                 } else if(ch == 'R') {
-                    matches &= ~9;
+                    matches &= 9;
                 } else if(ch == 'W') {
-                    matches &= ~3;
+                    matches &= 3;
                 } else if(ch == 'S') {
-                    matches &= ~12;
+                    matches &= 12;
                 } else if(ch == 'Y') {
                     matches &= ~6;
                 } else if(ch == 'K') {
-                    matches &= ~10;
+                    matches &= 10;
                 } else if(ch == 'V') {
-                    matches &= ~2;
+                    matches &= 13;
                 } else if(ch == 'H') {
-                    matches &= ~8;
+                    matches &= 7;
                 } else if(ch == 'D') {
-                    matches &= ~4;
+                    matches &= 11;
                 } else if(ch == 'B') {
-                    matches &= ~1;
+                    matches &= 14;
                 } else {
                     matches = 0;
                 }
