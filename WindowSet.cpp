@@ -158,6 +158,7 @@ namespace SeqView {
         int line = height - 1; // line to print commands - to deal with
                                // long commands
         wchar_t ch;
+        curs_set(1);
         while(true) {
             ch = getch();
 
@@ -188,6 +189,7 @@ namespace SeqView {
             buffer += ch; // This can be modified to deal with arrow keys
             cursor += 1;
         }
+        curs_set(0);
 
         // break buffer into tokens separated by spaces
         // and process
