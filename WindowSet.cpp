@@ -25,6 +25,55 @@ namespace SeqView {
         }
     }
 
+    void WindowSet::adjust_to_fill_proportionally() {
+        if(windows.size() == 0)
+            return;
+        // Space the windows vertically so that they take up no more
+        // space than needed and fill full horizontal space
+        update_size();
+        std::vector<int> newheights;
+        int even_height = (int) ((height - 1) / (double)windows.size());
+        int n_less_than_even_height = 0;
+        int space_less_than_even_height = 0;
+        for(auto const & window: windows) {
+            int64_t wn = window -> numseqs() + 3;
+            if(wn < even_height) {
+                n_less_than_even_height++;
+                space_less_than_even_height += wn;
+            }
+        }
+        // Calculate the vertical space needed by the windows with
+        // large numbers of sequences.
+        int large_height = (int) ((height - space_less_than_even_height - 1) /
+                (double)(windows.size()-n_less_than_even_height));
+        int used_height = 0;
+        unsigned win = 0;
+        int adj = 0;
+        int h = 0;
+        while(win < windows.size()) {
+            SeqWindow* window = windows[win];
+            if(height - used_height < large_height)
+                large_height = height - used_height - 1;
+            if(win == windows.size() - 1) {
+                if(height - used_height > large_height + 1)
+                    large_height = height - used_height - 1;
+                window -> resize(0, used_height + adj, width, large_height);
+                h = large_height;
+            } else {
+                int64_t wn = window -> numseqs() + 3;
+                if(wn < even_height) {
+                    window -> resize(0, used_height + adj, width, wn);
+                    h = wn;
+                } else {
+                    window -> resize(0, used_height + adj, width, large_height);
+                    h = large_height;
+                }
+            }
+            used_height += h;
+            win++;
+        }
+    }
+
     WindowSet::WindowSet() {
         getmaxyx(stdscr, height, width);
         focal_window = 0;
@@ -52,7 +101,7 @@ namespace SeqView {
         int ytemp = height;
         update_size();
         if(width != xtemp || height != ytemp)
-            adjust_to_fill_evenly();
+            adjust_to_fill_proportionally();
         for(unsigned i = 0; i < windows.size(); i++) {
             windows[i] -> display();
         }
@@ -65,7 +114,7 @@ namespace SeqView {
                     filename);
             windows.push_back(s);
             update_size();
-            adjust_to_fill_evenly();
+            adjust_to_fill_proportionally();
             change_focus(windows.size() - 1);
             update();
             return;
@@ -97,7 +146,7 @@ namespace SeqView {
                 focal_window = 0;
             change_focus(focal_window);
             update_size();
-            adjust_to_fill_evenly();
+            adjust_to_fill_proportionally();
             update();
             return (windows.size() > 0);
         }

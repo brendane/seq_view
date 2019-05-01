@@ -197,6 +197,10 @@ namespace SeqView {
         delwin(window);
     }
 
+    int64_t SeqWindow::numseqs() {
+        return seqs.numseqs();
+    }
+
     void SeqWindow::set_focus(bool focal) {
         isfocal = focal;
         modified = true;

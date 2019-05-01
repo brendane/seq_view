@@ -288,6 +288,8 @@ namespace SeqView {
 
             void set_focus(bool focal);
 
+            int64_t numseqs();
+
             // scroll mode is in powers of 10
             void set_scroll_mode(int mode);
 
@@ -316,6 +318,7 @@ namespace SeqView {
             std::vector<SeqWindow*> windows;
             unsigned focal_window;
             void adjust_to_fill_evenly();
+            void adjust_to_fill_proportionally();
 
         public:
 
