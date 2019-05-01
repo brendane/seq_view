@@ -324,8 +324,6 @@ namespace SeqView {
 
             WindowSet();
 
-            void run_command(Command command);
-
             void update_size();
 
             void print_message(string message);

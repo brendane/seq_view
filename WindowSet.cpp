@@ -80,11 +80,6 @@ namespace SeqView {
         std::vector<SeqWindow*> windows();
     }
 
-    void WindowSet::run_command(Command command) {
-        // if command in SeqSet commands, pass it along
-        // else run it here
-    }
-
     void WindowSet::update_size() {
         getmaxyx(stdscr, height, width);
     }
