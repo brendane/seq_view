@@ -54,6 +54,8 @@ appearance. To cancel any command type ESC. To quit use Ctrl-C or type
 **q**                   Close current window. When last window is closed,
                         the program quits.
 
+**aq**                  Close all windows and quit.
+
 **w**                   Cycle through windows
 **W**                   Cycle through windows backwards
 
@@ -68,21 +70,23 @@ move.
 
 **[number]s**           Set base scroll amount to 10^[number]
 
-**[number]h**           Move [number] units to the left
+**[number]h**           Move [number] units to the left (can also use arrow keys)
 
-**[number]l**           Move [number] units to the right
+**[number]l**           Move [number] units to the right (can also use arrow keys)
 
-**[number]j**           Move [number] units down
+**[number]j**           Move [number] units down (can also use arrow keys)
 
-**[number]k**           Move [number] units up
+**[number]k**           Move [number] units up (can also use arrow keys)
 
 **K**                   Move to the top
 
 **J**                   Move to the bottom
 
 **G**                   Move to the end
+**[end]**               
 
 **g**                   Move to the beginning
+**[home]**
 
 **[number]G**           Move to position [number]
 
@@ -100,6 +104,9 @@ move.
 
 **[number]n**           Adjust the number of characters of the names
                         displayed to be [number].
+
+**[shift][left/right]** Increase or decrease the number of characters of
+                        the names displayed. 
 
 **[number]f**           Adjust the frame for codon display mode. Should be
                         1, 2, or 3.

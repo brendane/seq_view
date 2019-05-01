@@ -82,7 +82,7 @@ namespace SeqView {
         GOTOEND, GOTOBEGIN, SCROLLTOP, SCROLLBOTTOM,
         SHOWHELP, CHANGEFOCUS, CHANGEFOCUSREV, NAMEWIDTH, 
         SPECIAL, DISPLAYMODE, SETFRAME, COMPARE, TOGGLEBOLD,
-        RESIZE};
+        RESIZE, ALLQUIT};
     typedef std::pair<Com, int> Command;
     extern Com ssc[];
     extern set<int> seqSetCommands;
@@ -338,6 +338,8 @@ namespace SeqView {
             // otherwise false; If there any windows left, 
             // keep going.
             bool close_focus();
+
+            void close_all();
 
             bool handle_command(Command command);
 

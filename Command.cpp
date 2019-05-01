@@ -82,6 +82,8 @@ namespace SeqView {
                     command_buffer += ch;
                     if(!command_buffer.compare("q"))
                         return Command(QUIT, param);
+                    if(!command_buffer.compare("aq"))
+                        return Command(ALLQUIT, param);
                     if(!command_buffer.compare("s"))
                         return Command(SCROLLMODE, param);
                     if(!command_buffer.compare("j"))
@@ -131,19 +133,21 @@ namespace SeqView {
                         return Command(COMPARETOGGLE, param);
                 }
 
-                // if window size has changed, but no caught by KEY_RESIZE
+                // if window size has changed, but not caught by KEY_RESIZE
                 getmaxyx(stdscr, h, w);
                 if(h != h_ || w != w_) {
                     h_ = h; w_ = w;
                     return Command(RESIZE, param);
                 }
 
-                // if no matches, clear the buffers
-                param_buffer = "";
-                command_buffer = "";
-                on_command = false;
-                on_param = true;
-                param = 1;
+                // if no matches and more than two letters, clear the buffers
+                if(command_buffer.size() > 2) {
+                    param_buffer = "";
+                    command_buffer = "";
+                    on_command = false;
+                    on_param = true;
+                    param = 1;
+                }
             }
 
         }

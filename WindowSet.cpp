@@ -147,6 +147,17 @@ namespace SeqView {
         }
     }
 
+    void WindowSet::close_all() {
+        if(windows.size() != 0) {
+            int i = 0;
+            while(windows.size() > 0) {
+                SeqWindow * s = windows[i];
+                windows.erase(windows.begin() + i);
+                delete s;
+            }
+        }
+    }
+
     bool WindowSet::handle_command(Command command) {
         if(seqSetCommands.count(command.first) > 0 &&
                 windows.size() > 0) {
@@ -155,6 +166,9 @@ namespace SeqView {
         } else {
             if(command.first == QUIT)
                 return close_focus();
+            if(command.first == ALLQUIT)
+                close_all();
+                return false;
             if(command.first == CHANGEFOCUS) {
                 if(command.second == 0) {
                     command.second = focal_window + 2; // Add 2 b/c command is 1 based, but focal_window is 0 based
