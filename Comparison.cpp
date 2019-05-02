@@ -18,7 +18,6 @@ namespace SeqView {
 
     // Just check if all the accessions have the same letter,
     // ignoring blank spaces (past the end of sequences).
-    // TODO: not working correctly
     std::vector<bool> simple_compare(std::vector<string> s) {
         std::vector <bool> ret;
         ret.reserve(s[0].size());
@@ -38,12 +37,6 @@ namespace SeqView {
                         break;
                     }
                 }
-                /*
-                if(ch != ' ') {
-                    match = false;
-                    break;
-                }
-                */
             }
             // All accessions are blank
             if(match && ch == ' ')

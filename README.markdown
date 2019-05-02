@@ -122,12 +122,22 @@ are entered by typing ":". There are just a few of them right now:
 "mode":             Type ";mode MODE" to switch display mode
                     ("normal", "codon", or "ten" right now).
 
+"compare-mode":     Type ";compare-mode MODE" to switch between
+                    different ways of determining whether sites vary.
+                    See Comparison modes section below.
+
 "bold":             Toggle bolded sequence display. (Not working yet.)
 
 
 ### Comparison modes
 
-TODO...
+"plain":            Tests only whether all sequences have the same state,
+                    ignoring case.
+
+"nucamb":           Tests whether all sequences *could* be the same,
+                    taking into account IUPAC ambiguity codes and
+                    counting gaps ("-") as matching anything. For
+                    nucleotide sequences.
 
 
 ### Display modes
