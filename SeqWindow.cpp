@@ -72,6 +72,7 @@ namespace SeqView {
                     mvwprintw(window, 1, col, " ");
                 }
             }
+            // TODO: fix numbering for translation mode
             col++;
             if(col >= width)
                 break;
@@ -298,6 +299,8 @@ namespace SeqView {
                 display_mode = CODON;
             } else if(param == 3) {
                 display_mode = TEN;
+            } else if(param == 4) {
+                display_mode = TRANSLATE;
             }
             modified = true;
         } else if(com_name == SETFRAME) {

@@ -46,6 +46,7 @@ namespace SeqView {
             if(beg > length()) {
                 ret = std::string(len, ' ');
             } else {
+                // TODO: figure out whether calls to length() are appropriate
                 if(mode == NORMAL) {
                     ret = seq.substr(beg, (length() - beg)) +
                         std::string(end - length() + 1, ' ');
@@ -73,6 +74,34 @@ namespace SeqView {
                         pos++;
                     }
                     ret += string(end - length() - 1, ' ');
+                } else if (mode == TRANSLATE) {
+                    int pos = beg - ((beg - frame + 1) % 3);
+                    if(pos < 0) pos = 0;
+                    std::string codon = "";
+                    for(int i = 0; i < length() - beg; i++) {
+                        if((pos - frame - 1) % 3 == 0) {
+                            codon += seq.substr(pos, 1);
+                            if(std_codon_table.count(codon)) {
+                                ret += std_codon_table[codon];
+                            } else {
+                                ret += "X";
+                            }
+                            codon = "";
+                        } else {
+                            codon += seq.substr(pos, 1);
+                        }
+                        pos++;
+                    }
+                    if(pos < length() && codon.size() < 3) {
+                        codon += seq.substr(pos, 3-codon.size());
+                        if(std_codon_table.count(codon)) {
+                            ret += std_codon_table[codon];
+                        } else {
+                            ret += "X";
+                        }
+                    }
+                    ret += string((end - length() - 1)/3, ' ');
+
                 }
             }
         } else {
@@ -100,17 +129,37 @@ namespace SeqView {
                     }
                     pos++;
                 }
+            } else if (mode == TRANSLATE) {
+                int pos = beg - ((beg - frame + 1) % 3);
+                if(pos < 0) pos = 0;
+                std::string codon = "";
+                for(int i = 0; i < length() - beg; i++) {
+                    if((pos - frame - 1) % 3 == 0) {
+                        codon += seq.substr(pos, 1);
+                        if(std_codon_table.count(codon)) {
+                            ret += std_codon_table[codon];
+                        } else {
+                            ret += "X";
+                        }
+                        codon = "";
+                    } else {
+                        codon += seq.substr(pos, 1);
+                    }
+                    pos++;
+                }
+                if(pos < length() && codon.size() < 3) {
+                    codon += seq.substr(pos, 3-codon.size());
+                    if(std_codon_table.count(codon)) {
+                        ret += std_codon_table[codon];
+                    } else {
+                        ret += "X";
+                    }
+                }
             }
 
         }
         return ret;
     }
-
-    /* Not implemented yet
-    std::vector<std::string> SeqRecord::getCodon(int64_t beg, int64_t end,
-            int frame) {
-    }
-    */
 
     int64_t SeqRecord::length() {
         return seq.length();
