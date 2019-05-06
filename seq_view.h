@@ -290,6 +290,7 @@ namespace SeqView {
             ComparisonMode compare; // whether comparison is on and what type of comparison
             ComparisonMode pcomp;   // previous comparison mode
             bool bolded;            // whether the sequences are displayed in bold
+            int transl_adj;         // position adjustment for translation mode
 
             void _scroll(int64_t newleft, int64_t newtop);
 

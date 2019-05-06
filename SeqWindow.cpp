@@ -18,7 +18,7 @@ namespace SeqView {
         // Need to reserve names_width + 1 columns for names
         num_pos_displayed = width - names_width - 1;
         num_seqs_displayed = height - 3;
-        last_pos = first_pos + num_pos_displayed - 1;
+        last_pos = (first_pos + num_pos_displayed - 1) * transl_adj;
         last_seq = first_seq + num_seqs_displayed - 1;
         modified = true;
     }
@@ -52,9 +52,10 @@ namespace SeqView {
         int col = names_width + 1;
         int frame = seqs.get_frame();
         for(int i = first_pos + 1; i < last_pos + 2; i++) {
-            if(!(i % 10)) {
+            i+=(transl_adj-1);
+            if(!((i/transl_adj) % 10)) {
                 mvwprintw(window, 1, col, "|");
-                mvwprintw(window, 0, col, "%i", i);
+                mvwprintw(window, 0, col, "%i", i/transl_adj);
             } else if(!(i % 5)) {
                 mvwprintw(window, 1, col, ":");
             } else {
@@ -142,6 +143,7 @@ namespace SeqView {
         compare = NOCOMPARE;
         pcomp = NUCAMB;
         bolded = false;
+        transl_adj = 1;
     }
 
     SeqWindow::SeqWindow(int upperleftX, int upperleftY, 
@@ -162,6 +164,7 @@ namespace SeqView {
         modified = true;
         compare = NOCOMPARE;
         pcomp = NUCAMB;
+        transl_adj = 1;
         display();
     }
 
@@ -185,6 +188,7 @@ namespace SeqView {
         modified = true;
         compare = NOCOMPARE;
         pcomp = NUCAMB;
+        transl_adj = 1;
         display();
     }
 
@@ -229,8 +233,6 @@ namespace SeqView {
     }
 
     // Deal with commands that change SeqSet params
-    //
-    // TODO: implement comparison mode change option
     void SeqWindow::handle_command(Command command) {
         Com com_name = command.first;
         int param = command.second;
@@ -251,14 +253,14 @@ namespace SeqView {
             }
         } else if(com_name == SCROLLLEFT) {
             if(first_pos > 0) {
-                newpos = first_pos - scrollmode * param;
+                newpos = first_pos - scrollmode * param * transl_adj;
                 if(newpos < 0)
                     newpos = 0;
                 _scroll(newpos, first_seq);
             }
         } else if(com_name == SCROLLRIGHT) {
             if(first_pos < seqs.length()) {
-                newpos = first_pos + scrollmode * param;
+                newpos = first_pos + scrollmode * param * transl_adj;
                 if(newpos >= seqs.length())
                     newpos = seqs.length() - 1;
                 _scroll(newpos, first_seq);
@@ -270,7 +272,7 @@ namespace SeqView {
         } else if(com_name == GOTOBEGIN) {
             _scroll(0, first_seq);
         } else if(com_name == GOTOEND) {
-            _scroll(seqs.length() - 1, first_seq);
+            _scroll((seqs.length() - 1), first_seq);
         } else if(com_name == GOTO) {
             newpos = param - 1 - (width - names_width) / 2;
             if(display_mode == CODON)
@@ -293,6 +295,10 @@ namespace SeqView {
                 change_name_width(names_width+1);
             }
         } else if(com_name == DISPLAYMODE) {
+            transl_adj = 1;
+            if((display_mode == TRANSLATE) && param != 4) {
+                //first_pos *= 3;
+            }
             if(param == 1) {
                 display_mode = NORMAL;
             } else if(param == 2) {
@@ -300,7 +306,10 @@ namespace SeqView {
             } else if(param == 3) {
                 display_mode = TEN;
             } else if(param == 4) {
+                if(display_mode != TRANSLATE)
+                    transl_adj = 3;
                 display_mode = TRANSLATE;
+                first_pos /= 3;
             }
             modified = true;
         } else if(com_name == SETFRAME) {
