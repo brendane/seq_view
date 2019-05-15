@@ -60,7 +60,7 @@ namespace SeqView {
                     all_spaces = false;
                 if(ch == 'A') {
                     matches &= ~14;
-                } else if(ch == 'T') {
+                } else if(ch == 'T' || ch == 'U') {
                     matches &= ~13;
                 } else if(ch == 'C') {
                     matches &= ~11;
