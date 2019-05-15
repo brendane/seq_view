@@ -296,9 +296,6 @@ namespace SeqView {
             }
         } else if(com_name == DISPLAYMODE) {
             transl_adj = 1;
-            if((display_mode == TRANSLATE) && param != 4) {
-                //first_pos *= 3;
-            }
             if(param == 1) {
                 display_mode = NORMAL;
             } else if(param == 2) {
@@ -306,10 +303,9 @@ namespace SeqView {
             } else if(param == 3) {
                 display_mode = TEN;
             } else if(param == 4) {
-                if(display_mode != TRANSLATE)
-                    transl_adj = 3;
+                //first_pos /= 3;
+                transl_adj = 3;
                 display_mode = TRANSLATE;
-                first_pos /= 3;
             }
             modified = true;
         } else if(com_name == SETFRAME) {
